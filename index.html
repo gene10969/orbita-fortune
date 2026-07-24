@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080704">
+  <meta name="description" content="二つの選択肢を、数秘・象徴札・可逆性・7日間の小さな実験で静かに整理する自動鑑定。未来を断定せず、自分で選び直せる星図をつくります。">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="ORBITA｜選択の星図">
+  <meta property="og:description" content="迷いを二択の星図へ。数秘・象徴札・7日間の行動実験を組み合わせた自動鑑定。">
+  <meta property="og:type" content="website">
+  <title>ORBITA｜選択の星図</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true">
+    <div class="orbit orbit-a"></div>
+    <div class="orbit orbit-b"></div>
+    <div class="starfield"></div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="#home" data-route="home" aria-label="ORBITA ホーム">
+      <span class="brand-mark" aria-hidden="true">◎</span>
+      <span><strong>ORBITA</strong><small>選択の星図</small></span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span></button>
+    <nav id="site-nav" class="site-nav" aria-label="メインナビゲーション">
+      <a href="#reading" data-route="reading">無料鑑定</a>
+      <a href="#history" data-route="history">履歴</a>
+      <a href="#about" data-route="about">この星図について</a>
+    </nav>
+    <button id="install-app" class="install-app" type="button" hidden>アプリを追加</button>
+  </header>
+
+  <main id="app" tabindex="-1">
+    <section id="view-home" class="view active" data-view="home">
+      <div class="hero shell">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">DECISION ORACLE / PRIVATE BY DESIGN</p>
+          <h1>答えを当てるのではなく、<br><em>選び直せる未来</em>をつくる。</h1>
+          <p class="hero-lead">二つの選択肢を、数の基調・三枚の象徴札・可逆性・後悔回避の視点で読み解きます。未来や相手の意思を断定せず、次の7日間に試せる小さな行動まで自動で整えます。</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#reading" data-route="reading">無料で星図をつくる</a>
+            <button class="button ghost" id="sample-reading" type="button">見本を見る</button>
+          </div>
+          <ul class="trust-list" aria-label="特徴">
+            <li>登録不要</li><li>結果は端末内で生成</li><li>未来の断定なし</li>
+          </ul>
+        </div>
+        <div class="hero-oracle reveal delay-1" aria-hidden="true">
+          <div class="oracle-disc">
+            <div class="disc-ring ring-1"></div><div class="disc-ring ring-2"></div><div class="disc-ring ring-3"></div>
+            <span class="north">N</span><span class="east">E</span><span class="south">S</span><span class="west">W</span>
+            <div class="needle"><i></i></div>
+            <div class="disc-core">A<span>or</span>B</div>
+          </div>
+        </div>
+      </div>
+
+      <section class="feature-section shell">
+        <p class="section-kicker">ONE READING, FIVE LAYERS</p>
+        <h2>占いと意思決定支援の間にある、独自の鑑定構造。</h2>
+        <div class="feature-grid">
+          <article class="feature-card"><span>01</span><h3>数の基調</h3><p>生年月日から、長期的な判断傾向と当日の巡りを算出します。</p></article>
+          <article class="feature-card"><span>02</span><h3>三枚の象徴札</h3><p>現在・見落とし・次の一歩を、ORBITA独自の24札から再現可能な方法で抽出します。</p></article>
+          <article class="feature-card"><span>03</span><h3>二択共鳴度</h3><p>成功率ではなく、今の自分が小さく試しやすい方向を比較します。</p></article>
+          <article class="feature-card"><span>04</span><h3>可逆性指数</h3><p>失敗しても戻れる余地を数値化し、先に撤退条件を考えます。</p></article>
+          <article class="feature-card"><span>05</span><h3>7日間の実験</h3><p>結論を急がず、現実の反応から次の判断材料を集めます。</p></article>
+        </div>
+      </section>
+
+      <section class="philosophy shell">
+        <div class="quote-mark">“</div>
+        <blockquote>占いの役割は、人生を決めることではない。<br>自分の選択を、自分の手に戻すこと。</blockquote>
+      </section>
+    </section>
+
+    <section id="view-reading" class="view" data-view="reading">
+      <div class="page-head shell">
+        <p class="eyebrow">CREATE YOUR ORBIT</p>
+        <h1>選択の星図をつくる</h1>
+        <p>結果は入力内容から一定の規則で生成されます。同じ鑑定日・同じ入力なら、同じ鑑定IDと結果になります。</p>
+      </div>
+
+      <div class="reading-layout shell">
+        <form id="reading-form" class="oracle-form" novalidate>
+          <div class="form-progress" aria-label="入力進捗"><span id="progress-bar"></span></div>
+          <div class="form-section">
+            <div class="section-number">01</div>
+            <div><h2>あなたの基調</h2><p>本名は不要です。鑑定内で呼ばれたい名前を入力してください。</p></div>
+          </div>
+          <div class="field-grid two">
+            <label class="field"><span>呼び名</span><input name="nickname" type="text" maxlength="40" autocomplete="nickname" placeholder="例：ミナ" required></label>
+            <label class="field"><span>生年月日</span><input name="birthdate" type="date" required></label>
+          </div>
+
+          <div class="form-section">
+            <div class="section-number">02</div>
+            <div><h2>迷いの輪郭</h2><p>具体的に書くほど、7日間の行動案が現実に近づきます。</p></div>
+          </div>
+          <label class="field"><span>分野</span>
+            <select name="category">
+              <option value="work">仕事・転職</option><option value="love">恋愛</option><option value="relationship">人間関係</option><option value="money">お金・事業</option><option value="life">生き方・環境</option><option value="other">その他</option>
+            </select>
+          </label>
+          <label class="field"><span>いま迷っていること</span><textarea name="question" maxlength="300" rows="4" placeholder="例：現在の仕事を続けるか、新しい環境へ移るか迷っています。" required></textarea><small><b data-count-for="question">0</b>/300</small></label>
+          <div class="choice-grid">
+            <label class="choice-field choice-a"><span><i>A</i>選択肢A</span><input name="optionA" type="text" maxlength="80" placeholder="例：現在の仕事を続ける" required></label>
+            <div class="choice-divider">OR</div>
+            <label class="choice-field choice-b"><span><i>B</i>選択肢B</span><input name="optionB" type="text" maxlength="80" placeholder="例：新しい仕事へ移る" required></label>
+          </div>
+
+          <div class="form-section">
+            <div class="section-number">03</div>
+            <div><h2>今の状態</h2><p>迷いの強さは結果の良し悪しではなく、行動の大きさを調整するために使います。</p></div>
+          </div>
+          <div class="field-grid two">
+            <label class="field"><span>考えたい期間</span><select name="timeframe"><option value="7days">7日以内</option><option value="1month" selected>1か月以内</option><option value="3months">3か月以内</option><option value="1year">1年以内</option></select></label>
+            <label class="field range-field"><span>迷いの強さ <output id="tension-output">5</output>/10</span><input name="tension" type="range" min="0" max="10" value="5"></label>
+          </div>
+
+          <div id="form-errors" class="form-errors" role="alert" hidden></div>
+          <label class="consent"><input name="adult" type="checkbox" required><span>18歳以上であり、本鑑定が娯楽・自己理解の補助で、重要な判断の代替ではないことに同意します。</span></label>
+          <label class="consent"><input name="saveHistory" type="checkbox"><span>この端末に鑑定履歴を保存する（後からいつでも削除できます）</span></label>
+
+          <button class="button primary submit-button" type="submit"><span>星図を生成する</span><small>通常数秒以内・登録不要</small></button>
+          <p class="privacy-note">入力内容は無料鑑定では外部送信されず、この端末内で処理されます。</p>
+        </form>
+
+        <aside class="reading-aside">
+          <div class="aside-card"><span class="aside-icon">◈</span><h3>未来は断定しません</h3><p>相手の本心、寿命、病気の治癒、投資・賭け事の結果などは鑑定しません。</p></div>
+          <div class="aside-card"><span class="aside-icon">⌁</span><h3>同じ入力は同じ結果</h3><p>ランダムに見える象徴札も、入力内容から生成されるため再確認できます。</p></div>
+          <div class="aside-card"><span class="aside-icon">⚿</span><h3>履歴は任意</h3><p>保存を選ばない限り、ブラウザを閉じた後に鑑定内容は残りません。</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="view-result" class="view" data-view="result">
+      <div id="result-root" class="shell result-shell"></div>
+    </section>
+
+    <section id="view-history" class="view" data-view="history">
+      <div class="page-head shell"><p class="eyebrow">LOCAL ARCHIVE</p><h1>この端末の鑑定履歴</h1><p>履歴はブラウザ内だけに保存されます。別の端末とは同期されません。</p></div>
+      <div class="shell"><div id="history-root" class="history-root"></div></div>
+    </section>
+
+    <section id="view-about" class="view" data-view="about">
+      <div class="page-head shell"><p class="eyebrow">PHILOSOPHY & SAFETY</p><h1>この星図について</h1><p>ORBITAは、占いの象徴性と意思決定の整理法を組み合わせた内省ツールです。</p></div>
+      <div class="article-shell shell">
+        <article class="prose-card"><h2>当てるためではなく、動ける大きさへ分解する</h2><p>迷いが苦しいのは、答えが分からないからだけではありません。一度に人生全体を決めようとすると、失敗への恐れが大きくなります。ORBITAは「どちらが絶対に正しいか」ではなく、「どちらをどの大きさで試せるか」を示します。</p></article>
+        <article class="prose-card"><h2>結果の仕組み</h2><p>生年月日の数的計算、鑑定日、相談内容、二つの選択肢、迷いの強さを組み合わせ、独自の24枚の象徴札と指標を生成します。同じ条件では同じ結果になるため、無作為な演出だけに依存しません。</p></article>
+        <article class="prose-card warning"><h2>扱わない内容</h2><p>生命・自傷・危害、病気の診断や治癒、妊娠の確定、法律判断、投資・賭け事の利益、相手の意思の断定は扱いません。緊急性がある場合は占いを使用せず、地域の緊急窓口や適切な専門家へ相談してください。</p></article>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><span>◎</span><div><strong>ORBITA</strong><small>選択の星図</small></div></div>
+    <nav aria-label="フッターナビゲーション"><a href="privacy.html">プライバシー</a><a href="terms.html">利用規約</a><a href="commerce.html">特定商取引法表記</a></nav>
+    <p>© 2026 ORBITA. This service is for entertainment and self-reflection.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

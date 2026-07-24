@@ -1,0 +1,26 @@
+{
+  "name": "ORBITA｜予約制・選択の星図",
+  "short_name": "ORBITA",
+  "description": "10名のAI鑑定人格から選び、シフト制の予約枠で約3分後に受け取る自動鑑定。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080704",
+  "theme_color": "#080704",
+  "lang": "ja",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
