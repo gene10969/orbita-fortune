@@ -1,0 +1,15 @@
+name = "orbita-api"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+[vars]
+SITE_URL = "https://YOUR-USER.github.io/YOUR-REPOSITORY"
+ALLOWED_ORIGINS = "https://YOUR-USER.github.io"
+OPENAI_MODEL = "SET_A_CURRENT_TEXT_MODEL_NAME"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "orbita-bookings"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# Stripe / OpenAI の秘密鍵は wrangler secret put で登録します。
