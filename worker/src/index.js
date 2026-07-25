@@ -49,7 +49,6 @@ async function stripeRequest(env, path, init = {}) {
   return data;
 }
 
-
 function requireDatabase(env) {
   if (!env.DB) throw new Error('missing_env:DB');
   return env.DB;
@@ -204,6 +203,53 @@ function validateDeepResult(value) {
   return value;
 }
 
+function chatTone(advisor) {
+  const tones = {
+    empathy:'やさしく安心感のある話し方',
+    rational:'落ち着いて現実的な話し方',
+    direct:'短く、はっきりした話し方',
+    motherly:'包み込むような温かい話し方',
+    wise:'落ち着きがあり、長い目で考える話し方',
+    mystic:'静かで余韻のある話し方。ただし難しい比喩は使わない',
+    philosophical:'別の見方を示す穏やかな話し方',
+    stoic:'無駄を省いた簡潔な話し方',
+    cheerful:'明るく前向きな話し方',
+    glamorous:'自信を取り戻せる華やかな話し方'
+  };
+  return tones[advisor?.tone] || tones.rational;
+}
+
+async function generateChatReply(request, env) {
+  requireEnv(env, ['OPENAI_API_KEY','OPENAI_MODEL']);
+  const payload = await readJson(request, 20000);
+  const advisor = getAdvisor(String(payload.advisorId || ''));
+  if (!advisor) return json({ error:'advisor_not_found' },404);
+  const userMessage = String(payload.userMessage || '').slice(0,600);
+  const nextQuestion = String(payload.nextQuestion || '').slice(0,300);
+  const step = String(payload.step || '').slice(0,40);
+  const answers = payload.answers && typeof payload.answers === 'object' ? payload.answers : {};
+
+  const system = `あなたはORBITAの鑑定パートナー「${advisor.name}」です。${chatTone(advisor)}で、日本語の短い会話文を作ってください。利用者の入力を一度受け止め、次の質問へ自然につなげます。1〜3文、合計180字以内。難しい比喩、専門用語、断定、恐怖をあおる表現、追加購入の勧誘は禁止です。未来、成功、相手の気持ち、病気、妊娠、寿命、法律、税務、投資、ギャンブルの結果を断定しません。自分を人間、占い師、AI、システムなどと説明しません。次の質問は意味を変えず、分かりやすい日本語で含めてください。JSONのみを返してください。形式: {"reply":"会話文"}`;
+  const input = { step, userMessage, nextQuestion, knownAnswers:answers };
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method:'POST',
+    headers:{ 'Authorization':`Bearer ${env.OPENAI_API_KEY}`, 'Content-Type':'application/json' },
+    body:JSON.stringify({
+      model:env.OPENAI_MODEL,
+      input:[
+        { role:'system', content:[{ type:'input_text', text:system }] },
+        { role:'user', content:[{ type:'input_text', text:JSON.stringify(input) }] }
+      ],
+      max_output_tokens:300
+    })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data?.error?.message || 'openai_error');
+  const value = parseJsonText(extractOutputText(data));
+  if (!value || typeof value.reply !== 'string' || value.reply.length < 3 || value.reply.length > 240) throw new Error('invalid_chat_output');
+  return json({ reply:value.reply });
+}
+
 async function generateDeepReading(request, env) {
   requireEnv(env, ['OPENAI_API_KEY','OPENAI_MODEL']);
   const { sessionId, reading } = await readJson(request);
@@ -245,6 +291,7 @@ export default {
       else if (request.method === 'GET' && url.pathname.startsWith('/api/bookings/')) response = await readBooking(url,env);
       else if (request.method === 'POST' && url.pathname === '/api/create-checkout') response = await createCheckout(request, env);
       else if (request.method === 'GET' && url.pathname === '/api/payment-status') response = await paymentStatus(url, env);
+      else if (request.method === 'POST' && url.pathname === '/api/chat') response = await generateChatReply(request, env);
       else if (request.method === 'POST' && url.pathname === '/api/deep-reading') response = await generateDeepReading(request, env);
       else response = json({ error:'not_found' }, 404);
       const headers = new Headers(response.headers);

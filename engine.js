@@ -1,30 +1,30 @@
-export const ENGINE_VERSION = '2.0.0';
+export const ENGINE_VERSION = '2.1.0';
 
 const ARCHETYPES = [
-  { id:'quiet-tower', name:'静かな塔', glyph:'◇', element:'静', light:'距離を置くことで、本当に必要な情報が見えやすくなる時です。', shadow:'考え続けるだけでは、慎重さが停滞へ変わります。', action:'判断材料を3つに絞り、今夜はいったん考えるのを止める。' },
-  { id:'open-door', name:'開いた扉', glyph:'⟡', element:'動', light:'小さく試すことで、想像では分からなかった反応を確かめられます。', shadow:'勢いだけで不可逆な決断まで進めない注意が必要です。', action:'元に戻せる範囲で、最小の一歩だけ実行する。' },
-  { id:'gold-thread', name:'金の糸', glyph:'⌁', element:'縁', light:'人や過去の経験とのつながりが、選択の基準を思い出させます。', shadow:'相手の期待を自分の希望と取り違えやすい時です。', action:'「私はどうしたいか」を主語にして一文書く。' },
-  { id:'moon-well', name:'月の井戸', glyph:'◒', element:'深', light:'表面の理由より、繰り返し浮かぶ感情に重要な手掛かりがあります。', shadow:'不安を事実として扱うと、選択肢を狭めてしまいます。', action:'事実・予想・感情を別々に書き分ける。' },
-  { id:'first-spark', name:'最初の火花', glyph:'✦', element:'始', light:'完成度より着手が流れを変えます。', shadow:'新しさへの高揚だけで、維持条件を見落とさないでください。', action:'15分で終わる試作品か仮連絡をつくる。' },
-  { id:'returning-tide', name:'還る潮', glyph:'≈', element:'巡', light:'一度離れたものを見直すことで、以前とは違う答えが得られます。', shadow:'懐かしさだけで同じ場所へ戻らないこと。', action:'過去にやめた理由が今も有効か確認する。' },
-  { id:'glass-bridge', name:'硝子の橋', glyph:'⌇', element:'境', light:'不確実でも、確認しながら渡れる道があります。', shadow:'一度に全てを決めようとすると恐れが大きくなります。', action:'次の確認地点だけを決める。' },
-  { id:'sealed-letter', name:'封じた手紙', glyph:'▱', element:'言', light:'言葉にしていない本音が、選択を難しくしています。', shadow:'説明を避けるほど、相手の想像が事実を上書きします。', action:'送らなくてもよいので、本音の返信文を一度作る。' },
-  { id:'north-window', name:'北の窓', glyph:'⌃', element:'観', light:'短期的な損得から離れると、進む方向が整います。', shadow:'理想を高く置きすぎて、現実の足場を否定しないこと。', action:'半年後に残したいものを一つ選ぶ。' },
-  { id:'small-key', name:'小さな鍵', glyph:'⚿', element:'解', light:'大きな問題に見えても、実際の詰まりは一箇所かもしれません。', shadow:'全部を変える必要があると思い込まないでください。', action:'最も負担の大きい一点だけを特定する。' },
-  { id:'unlit-lantern', name:'灯る前のランタン', glyph:'⬡', element:'準', light:'今は準備不足ではなく、点火条件を整えている段階です。', shadow:'準備という言葉で決断を先送りし続けないこと。', action:'開始条件を数値か日付で決める。' },
-  { id:'two-shores', name:'二つの岸', glyph:'≍', element:'選', light:'どちらを選んでも得るものと失うものがあります。', shadow:'損失ゼロの選択肢を探すほど決められなくなります。', action:'許容できる損失を先に決める。' },
-  { id:'hidden-stair', name:'隠れた階段', glyph:'⋰', element:'転', light:'正面突破以外の経路が見つかる余地があります。', shadow:'裏道を探すあまり、必要な対話まで避けないこと。', action:'AかBではない第三の小案を一つ作る。' },
-  { id:'golden-scale', name:'金の天秤', glyph:'⚖', element:'衡', light:'感情と条件を別々に量ることで、納得できる選択へ近づきます。', shadow:'数字だけ、気持ちだけの一方に偏らないでください。', action:'条件点と感情点を10点満点で別々に採点する。' },
-  { id:'rain-after', name:'雨あがり', glyph:'☂', element:'浄', light:'混乱のピークは過ぎ、判断をやり直せる余白があります。', shadow:'疲労したまま結論を急がないこと。', action:'睡眠・食事・時間を整えてから再判定する。' },
-  { id:'mirror-room', name:'鏡の部屋', glyph:'◈', element:'映', light:'相手への評価に、自分の恐れや願いが映っている可能性があります。', shadow:'自己責任だけに寄せて、相手の問題を見逃さないこと。', action:'相手の事実と自分の解釈を二列に分ける。' },
-  { id:'stone-seed', name:'石の種', glyph:'●', element:'耐', light:'すぐに結果が出なくても、積み重ねが残る選択です。', shadow:'耐えること自体を目的にしないでください。', action:'続ける期限と撤退条件を同時に決める。' },
-  { id:'crosswind', name:'横風', glyph:'⇝', element:'変', light:'予定外の反応が、より適切な方向修正を促します。', shadow:'一時的な反対を、全面的な否定と受け取らないこと。', action:'反応を見て調整できる余白を残す。' },
-  { id:'empty-chair', name:'空いた椅子', glyph:'□', element:'余', light:'埋めようとしない空白が、新しい選択肢を招きます。', shadow:'寂しさを避けるためだけの選択に注意してください。', action:'何もしない場合の利点も一度書く。' },
-  { id:'dawn-line', name:'夜明けの線', glyph:'━', element:'明', light:'状況が完全に変わる前に、方向だけ先に見え始めています。', shadow:'確信が100％になるまで待たないこと。', action:'60％納得できる仮決定を置く。' },
-  { id:'root-map', name:'根の地図', glyph:'⌄', element:'基', light:'現在の迷いは、生活基盤や価値観の再確認を求めています。', shadow:'目先の魅力で基盤を崩さないようにしてください。', action:'お金・時間・健康・関係の最低条件を確認する。' },
-  { id:'white-feather', name:'白い羽', glyph:'⌁', element:'軽', light:'不要な義務を一つ外すと、本心に近い選択が残ります。', shadow:'責任から逃れることと、重荷を手放すことを混同しないでください。', action:'本来引き受けなくてよい役割を一つ確認する。' },
-  { id:'silent-bell', name:'鳴らない鐘', glyph:'◉', element:'待', light:'反応がないこと自体が、重要な情報になっています。', shadow:'相手の沈黙に都合のよい意味を加えないこと。', action:'待つ期限と、期限後の行動を決める。' },
-  { id:'orbit-change', name:'軌道変更', glyph:'◎', element:'新', light:'目的を保ったまま、方法だけを変える選択が有効です。', shadow:'過去の投入量だけを理由に続けないでください。', action:'目的と手段を分け、代替手段を二つ挙げる。' }
+  { id:'quiet-tower', name:'静かな塔', glyph:'◇', element:'静', light:'少し距離を置くと、必要な情報が見えやすくなります。', shadow:'考えるだけの時間が長すぎると、動けなくなります。', action:'判断に必要な情報を3つだけ書き出し、今日は考える時間を終える。' },
+  { id:'open-door', name:'開いた扉', glyph:'⟡', element:'動', light:'小さく試すと、実際の反応を確認できます。', shadow:'勢いで元に戻せない決断まで進まないよう注意が必要です。', action:'やり直せる範囲で、最小の一歩だけ試す。' },
+  { id:'gold-thread', name:'金の糸', glyph:'⌁', element:'縁', light:'人とのつながりや過去の経験が、判断の基準を思い出させます。', shadow:'相手の希望と自分の希望を混同しやすい時です。', action:'「私はどうしたいか」を主語にして一文書く。' },
+  { id:'moon-well', name:'月の井戸', glyph:'◒', element:'深', light:'繰り返し浮かぶ感情に、大切な手掛かりがあります。', shadow:'不安を事実だと思い込むと、選択肢が狭くなります。', action:'事実・予想・感情を分けて書く。' },
+  { id:'first-spark', name:'最初の火花', glyph:'✦', element:'始', light:'完璧にするより、まず始めることが流れを変えます。', shadow:'新しさだけに気を取られ、続ける条件を見落とさないでください。', action:'15分で作れる試作品か、短い確認連絡を作る。' },
+  { id:'returning-tide', name:'還る潮', glyph:'≈', element:'巡', light:'以前やめたことを見直すと、今なら違う答えが出るかもしれません。', shadow:'懐かしさだけを理由に戻らないことが大切です。', action:'以前やめた理由が、今も当てはまるか確認する。' },
+  { id:'glass-bridge', name:'硝子の橋', glyph:'⌇', element:'境', light:'確認しながら少しずつ進める道があります。', shadow:'一度に全部決めようとすると、不安が大きくなります。', action:'次に確認する一つだけを決める。' },
+  { id:'sealed-letter', name:'封じた手紙', glyph:'▱', element:'言', light:'言葉にしていない本音が、決めにくさにつながっています。', shadow:'説明を避けると、相手の想像で話が進みやすくなります。', action:'送らなくてもよいので、本音の文章を一度作る。' },
+  { id:'north-window', name:'北の窓', glyph:'⌃', element:'観', light:'短い目での損得を離れると、進みたい方向が見えやすくなります。', shadow:'理想が高すぎて、現実にできることを否定しないでください。', action:'半年後にも残したいものを一つ選ぶ。' },
+  { id:'small-key', name:'小さな鍵', glyph:'⚿', element:'解', light:'問題全体ではなく、一か所の詰まりが原因かもしれません。', shadow:'全部を変えなければならないと思い込まないでください。', action:'一番負担が大きい一つを特定する。' },
+  { id:'unlit-lantern', name:'灯る前のランタン', glyph:'⬡', element:'準', light:'今は、始めるための条件を整えている段階です。', shadow:'準備を理由に、いつまでも先延ばしにしないことが大切です。', action:'開始する日か、開始できる条件を決める。' },
+  { id:'two-shores', name:'二つの岸', glyph:'≍', element:'選', light:'どちらを選んでも、得るものと手放すものがあります。', shadow:'損をしない選択だけを探すと、決められなくなります。', action:'受け入れられる不利益を先に決める。' },
+  { id:'hidden-stair', name:'隠れた階段', glyph:'⋰', element:'転', light:'AかB以外の方法が見つかる可能性があります。', shadow:'別の方法を探すあまり、必要な話し合いまで避けないでください。', action:'AでもBでもない小さな案を一つ作る。' },
+  { id:'golden-scale', name:'金の天秤', glyph:'⚖', element:'衡', light:'気持ちと条件を別々に考えると、納得しやすくなります。', shadow:'数字だけ、気持ちだけに偏らないようにしてください。', action:'条件と気持ちを、それぞれ10点満点で採点する。' },
+  { id:'rain-after', name:'雨あがり', glyph:'☂', element:'浄', light:'混乱が少し落ち着き、考え直せる余裕が戻っています。', shadow:'疲れている時に結論を急がないでください。', action:'睡眠・食事・時間を整えてから、もう一度考える。' },
+  { id:'mirror-room', name:'鏡の部屋', glyph:'◈', element:'映', light:'相手への評価に、自分の不安や期待が混ざっているかもしれません。', shadow:'自分だけを責めて、相手側の問題を見落とさないでください。', action:'相手が実際にしたことと、自分の解釈を分けて書く。' },
+  { id:'stone-seed', name:'石の種', glyph:'●', element:'耐', light:'すぐ結果が出なくても、続けた分が残る選択です。', shadow:'我慢すること自体を目的にしないでください。', action:'続ける期限と、やめる条件を同時に決める。' },
+  { id:'crosswind', name:'横風', glyph:'⇝', element:'変', light:'予定外の反応が、より合う方向へ修正するきっかけになります。', shadow:'一度の反対を、すべての否定だと思わないでください。', action:'反応を見て変更できる余地を残す。' },
+  { id:'empty-chair', name:'空いた椅子', glyph:'□', element:'余', light:'すぐ埋めない時間が、新しい選択肢を見つけやすくします。', shadow:'寂しさを避けるためだけの選択に注意してください。', action:'何もしない場合の良い点も書き出す。' },
+  { id:'dawn-line', name:'夜明けの線', glyph:'━', element:'明', light:'状況が完全に変わる前に、進みたい方向が見え始めています。', shadow:'100％の確信を待ち続けないことが大切です。', action:'60％納得できる仮の決定を置く。' },
+  { id:'root-map', name:'根の地図', glyph:'⌄', element:'基', light:'今の迷いは、生活の土台や大切にしたいことの確認を求めています。', shadow:'目先の魅力だけで、生活の土台を崩さないでください。', action:'お金・時間・健康・人間関係の最低条件を確認する。' },
+  { id:'white-feather', name:'白い羽', glyph:'⌁', element:'軽', light:'不要な役割を一つ外すと、本当に望む方向が見えやすくなります。', shadow:'責任から逃げることと、不要な負担を減らすことを分けて考えてください。', action:'本来は引き受けなくてもよい役割を一つ確認する。' },
+  { id:'silent-bell', name:'鳴らない鐘', glyph:'◉', element:'待', light:'返事や反応がないことも、大切な判断材料です。', shadow:'相手の沈黙に、自分に都合のよい意味を加えないでください。', action:'待つ期限と、期限を過ぎた後の行動を決める。' },
+  { id:'orbit-change', name:'軌道変更', glyph:'◎', element:'新', light:'目的は変えず、方法だけ変える選択が合っています。', shadow:'ここまで続けた時間だけを理由に、同じ方法を続けないでください。', action:'目的と方法を分け、別の方法を二つ考える。' }
 ];
 
 const CATEGORY_GUIDANCE = {
@@ -37,54 +37,48 @@ const CATEGORY_GUIDANCE = {
 };
 
 const TONE_GUIDANCE = {
-  empathy:'急いで答えを固定せず、まず心が安全に動ける範囲を確かめます。',
-  rational:'感情と条件を分け、実行可能性と損失上限から読み解きます。',
-  direct:'慰めになる解釈より、今避けている論点を優先して映します。',
-  motherly:'抱えている負担を責めず、守るものと手放すものを整えます。',
-  wise:'目先の結果から少し離れ、長く残る軸を基準に読みます。',
-  mystic:'時期の巡りと感情の波を重ね、無理なく動ける瞬間を探します。',
-  philosophical:'一つの正解ではなく、選択を支える前提そのものを問い直します。',
-  stoic:'続ける条件とやめる条件を曖昧にせず、最小限の言葉で示します。',
-  cheerful:'重く考えすぎず、今日から試せる明るい一歩へ変換します。',
-  glamorous:'他人からどう見られるかより、自分の魅力と境界線を軸に読みます。'
+  empathy:'気持ちを急いで決めず、安心して動ける範囲から考えます。',
+  rational:'気持ちと条件を分けて、現実にできることを考えます。',
+  direct:'都合のよい解釈を避け、見落としている問題をはっきり整理します。',
+  motherly:'抱えている負担を責めず、守るものと減らすものを整理します。',
+  wise:'目先の結果だけでなく、長く続けられる方向を考えます。',
+  mystic:'動く時期と待つ時期を分け、無理のないタイミングを考えます。',
+  philosophical:'一つの答えに決めつけず、別の考え方も含めて整理します。',
+  stoic:'続ける条件とやめる条件を、短くはっきり整理します。',
+  cheerful:'重く考えすぎず、今日からできる行動へ変えます。',
+  glamorous:'他人の評価より、自分が納得できる選び方を中心に考えます。'
 };
 
 const METHOD_GUIDANCE = {
-  decision:'二つの選択肢の試しやすさと戻りやすさを比較します。',
-  tarot:'三枚の象徴札が示す現在・盲点・次の一歩を中心に読みます。',
-  numerology:'生年月日の数的傾向と当日の巡りを中心に読みます。',
-  astrology:'時期の波と、急がない方がよい部分を中心に読みます。',
-  oracle:'今の自分に必要な視点と、心を整える一歩を中心に読みます。',
-  intuition:'相談文に繰り返し現れる言葉と、避けている論点を中心に読みます。'
+  decision:'AとBの試しやすさと、やり直しやすさを比べます。',
+  tarot:'3枚の象徴カードから、今の状況・注意点・次の行動を見ます。',
+  numerology:'生年月日の数字から、考え方と判断の傾向を見ます。',
+  astrology:'今動くか、少し待つかを時期の流れから考えます。',
+  oracle:'今必要な考え方と、気持ちを整える行動を見ます。',
+  intuition:'相談文に繰り返し出る言葉から、本音と迷いを整理します。'
 };
 
 const STOP_PATTERNS = [
   /自殺|死にたい|消えたい|生きていたくない|自傷|リストカット/i,
   /殺す|殺したい|傷つけたい|復讐してやる/i,
   /寿命|死期|いつ死ぬ|余命/i,
-  /病気.*治る|癌.*治る|妊娠.*確実|薬.*やめ/i,
-  /必ず.*儲か|絶対.*当た|宝くじ|競馬|競艇|パチンコ.*勝/i
+  /病気.*治る|治癒|診断して|妊娠している|妊娠できる/i,
+  /株|FX|仮想通貨|暗号資産|競馬|競艇|パチンコ|宝くじ|ギャンブル/i
 ];
 
 const CAUTION_PATTERNS = [
-  /病気|症状|診断|治療|薬|妊娠|流産|手術/i,
-  /投資|株|FX|仮想通貨|暗号資産|借金|ローン/i,
-  /離婚|相続|訴訟|警察|弁護士|契約違反/i
+  /病院|薬|手術|診断|症状|妊娠|法律|弁護士|裁判|税金|借金|投資|融資/i
 ];
 
 export function normalizeText(value, max = 240) {
-  return String(value ?? '')
-    .replace(/[<>]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, max);
+  return String(value ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
 export function fnv1a(value) {
-  let hash = 0x811c9dc5;
+  let hash = 2166136261;
   for (let i = 0; i < value.length; i += 1) {
     hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
+    hash = Math.imul(hash, 16777619);
   }
   return hash >>> 0;
 }
@@ -99,45 +93,39 @@ export function mulberry32(seed) {
 }
 
 export function reduceNumber(value, preserveMasters = true) {
-  let n = Math.abs(Number(value) || 0);
-  while (n > 9) {
-    if (preserveMasters && [11, 22, 33].includes(n)) return n;
-    n = String(n).split('').reduce((sum, d) => sum + Number(d), 0);
-  }
-  return n || 1;
+  let result = Math.abs(Number(value) || 0);
+  while (result > 9 && !(preserveMasters && [11, 22, 33].includes(result))) result = String(result).split('').reduce((sum, digit) => sum + Number(digit), 0);
+  return result;
 }
 
 export function calculateLifePath(dateString) {
   const digits = String(dateString).replace(/\D/g, '');
-  if (digits.length !== 8) return null;
-  return reduceNumber(digits.split('').reduce((sum, d) => sum + Number(d), 0), true);
+  return reduceNumber([...digits].reduce((sum, digit) => sum + Number(digit), 0));
 }
 
 export function calculatePersonalCycle(dateString, readingDate) {
-  const birth = new Date(`${dateString}T12:00:00`);
-  const current = new Date(`${readingDate}T12:00:00`);
-  if (Number.isNaN(birth.getTime()) || Number.isNaN(current.getTime())) return null;
-  const total = (birth.getMonth() + 1) + birth.getDate() + current.getFullYear() + (current.getMonth() + 1) + current.getDate();
-  return reduceNumber(total, false);
+  const birth = String(dateString).split('-').map(Number);
+  const read = String(readingDate).split('-').map(Number);
+  return reduceNumber((birth[1] || 0) + (birth[2] || 0) + [...String(read[0] || 0)].reduce((sum, digit) => sum + Number(digit), 0) + (read[1] || 0) + (read[2] || 0));
 }
 
 export function detectSafetyRisk(text) {
-  const source = normalizeText(text, 1000);
-  if (STOP_PATTERNS.some((pattern) => pattern.test(source))) {
+  const normalized = normalizeText(text, 800);
+  if (STOP_PATTERNS.some((pattern) => pattern.test(normalized))) {
     return {
-      level: 'stop',
-      title: 'この内容は占いとして扱えません',
-      message: '生命・医療・危害・賭け事の結果を占いで判断することはできません。緊急性がある場合は、地域の緊急窓口や信頼できる人、医療・法律・金融の専門家へ直接相談してください。'
+      level:'stop',
+      title:'この内容は鑑定できません',
+      message:'命や安全、医療、妊娠、法律、投資、賭け事などの重要な判断には利用できません。緊急性がある場合は、地域の緊急窓口や適切な専門家へ相談してください。'
     };
   }
-  if (CAUTION_PATTERNS.some((pattern) => pattern.test(source))) {
+  if (CAUTION_PATTERNS.some((pattern) => pattern.test(normalized))) {
     return {
-      level: 'caution',
-      title: '専門判断とは分けてお読みください',
-      message: 'この鑑定は気持ちと選択肢を整理するための娯楽・内省コンテンツです。医療・法律・金融上の判断は、必ず資格を持つ専門家の情報を優先してください。'
+      level:'caution',
+      title:'専門家への確認も優先してください',
+      message:'この結果は参考情報です。医療・法律・税務・金融などの判断では、資格を持つ専門家や公的窓口へ確認してください。'
     };
   }
-  return { level: 'normal', title: '', message: '' };
+  return { level:'normal', title:'', message:'' };
 }
 
 function uniqueDraws(random, count) {
@@ -163,36 +151,42 @@ function scorePair(random, lifePath, cycle, tension) {
 
 function decisionLabel(scores) {
   const delta = scores.a - scores.b;
-  if (delta >= 16) return { key:'a', text:'現時点ではAを小さく試す流れ', tone:'forward' };
-  if (delta <= -16) return { key:'b', text:'現時点ではBを小さく試す流れ', tone:'forward' };
-  return { key:'hold', text:'今は結論より比較実験が有効', tone:'balanced' };
+  if (delta >= 16) return { key:'a', text:'まずはAを小さく試すのがおすすめです', tone:'forward' };
+  if (delta <= -16) return { key:'b', text:'まずはBを小さく試すのがおすすめです', tone:'forward' };
+  return { key:'hold', text:'今はAとBを比べるための小さな確認が必要です', tone:'balanced' };
 }
 
 function buildSevenDayPlan(input, cards, scores, reversibility) {
   const chosen = scores.a >= scores.b ? input.optionA : input.optionB;
   const categoryTips = CATEGORY_GUIDANCE[input.category] || CATEGORY_GUIDANCE.other;
   return [
-    { day:1, title:'迷いを分解する', body:`「${input.optionA}」と「${input.optionB}」で、得るもの・失うものを各3つ書きます。` },
-    { day:2, title:'事実だけを集める', body:'推測や期待を除き、確認できている事実だけを箇条書きにします。' },
-    { day:3, title:'象徴札を行動へ変える', body:cards[1].action },
+    { day:1, title:'AとBを書き分ける', body:`「${input.optionA}」と「${input.optionB}」で、良い点と心配な点をそれぞれ3つ書きます。` },
+    { day:2, title:'事実だけを確認する', body:'予想や期待を入れず、今確認できている事実だけを書きます。' },
+    { day:3, title:'気をつけたい点を行動に変える', body:cards[1].action },
     { day:4, title:'最低条件を決める', body:categoryTips[0] + '。' },
-    { day:5, title:'小さく試す', body:`「${chosen}」を選んだ場合の最小実験を、${reversibility >= 60 ? '24時間以内' : '3日以内'}に一つ行います。` },
-    { day:6, title:'身体反応を記録する', body:'実行前後の緊張・安心・疲労を10点満点で記録します。' },
-    { day:7, title:'仮決定する', body:'結果ではなく、次の7日間だけ採用する方向を決めます。変更可能な仮決定で構いません。' }
+    { day:5, title:'小さく試す', body:`「${chosen}」を選んだ場合にできる最小の行動を、${reversibility >= 60 ? '24時間以内' : '3日以内'}に一つ試します。` },
+    { day:6, title:'実際の反応を記録する', body:'行動する前と後で、不安・安心・疲れを10点満点で記録します。' },
+    { day:7, title:'次の7日間だけ決める', body:'一生の決定ではなく、次の7日間だけ試す方向を決めます。後から変更して構いません。' }
   ];
 }
 
 function buildLocalNarrative(input, cards, scores, lifePath, cycle, decision, reversibility) {
+  const preferred = decision.key === 'a' ? input.optionA : input.optionB;
   const lead = decision.key === 'hold'
-    ? `二つの選択肢は拮抗しています。今は無理に一つへ固定するより、戻れる範囲で両者の違いを確かめる時です。`
-    : `現在の星路は「${decision.key === 'a' ? input.optionA : input.optionB}」側へやや傾いています。ただし、これは成功確率ではなく、今の相談内容と象徴の組み合わせが示す“試しやすさ”です。`;
+    ? 'AとBの差は小さめです。今は結論を急ぐより、少しずつ試して実際の違いを確認する段階です。'
+    : `現時点では「${preferred}」の方が、小さく試しやすい結果です。これは成功を保証する数字ではなく、今の状況で始めやすいかどうかを表しています。`;
   const toneLead = TONE_GUIDANCE[input.advisorTone] || TONE_GUIDANCE.rational;
   const methodLead = METHOD_GUIDANCE[input.method] || METHOD_GUIDANCE.decision;
+  const returnText = reversibility >= 65
+    ? 'やり直しや変更がしやすいため、小さく試してから調整できます。'
+    : reversibility >= 45
+      ? '条件を決めれば試せます。始める前に、やめる条件も決めておくと安心です。'
+      : '元に戻しにくい要素があります。始める前に情報確認と第三者への相談を優先してください。';
   return {
-    overview: `${toneLead} ${methodLead} ${lead} 中心札「${cards[0].name}」は、${cards[0].light}`,
-    hidden: `見落としやすい点として「${cards[1].name}」が現れています。${cards[1].shadow}`,
-    timing: `数の基調は${lifePath}、今日の巡りは${cycle}です。可逆性指数は${reversibility}。${reversibility >= 65 ? 'まず試してから修正できる余地が比較的大きい状態です。' : reversibility >= 45 ? '小さく区切れば試せますが、撤退条件を先に決める必要があります。' : '不可逆な要素が多いため、実行前の確認と第三者の視点が重要です。'}`,
-    closing: `${toneLead} 結論を当てることより、選んだ後に自分で整え直せる設計を持つことが、今回の鑑定で最も重要です。`
+    overview: `${toneLead} ${methodLead} ${lead} 「${cards[0].name}」は、${cards[0].light}`,
+    hidden: `特に気をつけたいのは「${cards[1].name}」です。${cards[1].shadow}`,
+    timing: `生年月日から出した基礎数は${lifePath}、今回の時期を表す数字は${cycle}です。${returnText}`,
+    closing: `${toneLead} 今回は、最終結論を決めることより、次に何を確認するかを決めることが大切です。`
   };
 }
 
@@ -222,7 +216,7 @@ export function validateReadingInput(raw) {
   if (!input.optionB) errors.push('選択肢Bを入力してください。');
   if (input.optionA === input.optionB) errors.push('選択肢AとBは異なる内容にしてください。');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.readingDate)) errors.push('鑑定日が正しくありません。');
-  if (!input.advisorId) errors.push('鑑定者を選択してください。');
+  if (!input.advisorId) errors.push('鑑定パートナーを選択してください。');
   if (!input.bookingStart || Number.isNaN(new Date(input.bookingStart).getTime())) errors.push('予約日時を選択してください。');
   return { input, errors };
 }
@@ -265,19 +259,19 @@ export function generateReading(raw) {
     narrative,
     guidance,
     plan,
-    disclaimer:'本鑑定は娯楽および自己理解の補助を目的とし、未来・相手の意思・結果を保証するものではありません。重要な医療・法律・金融・安全上の判断には使用しないでください。'
+    disclaimer:'この鑑定は、悩みを整理するための参考情報です。未来や相手の気持ち、成功や結果を保証するものではありません。医療・法律・税務・投資・安全に関わる判断は、適切な専門家へ相談してください。'
   };
 }
 
 export function readingToShareText(reading) {
   if (!reading?.ok) return '';
   return [
-    `ORBITA 選択の星図`,
+    'ORBITA 鑑定結果',
     `鑑定ID: ${reading.readingId}`,
-    `現在の指針: ${reading.decision.text}`,
+    `今回のまとめ: ${reading.decision.text}`,
     `A「${reading.input.optionA}」 ${reading.scores.a}`,
     `B「${reading.input.optionB}」 ${reading.scores.b}`,
-    `中心札: ${reading.cards[0].name}`,
+    `中心カード: ${reading.cards[0].name}`,
     reading.narrative.overview,
     '',
     reading.disclaimer

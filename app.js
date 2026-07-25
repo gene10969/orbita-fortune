@@ -4,14 +4,15 @@ import { BOOKING_CONFIG, formatDateLabel, formatDateTimeJst, toJstParts } from '
 import { bookingDates, getAvailability, getStatuses, reserveBooking } from './booking-service.js';
 import { generateReading, readingToShareText } from './engine.js';
 
-const ASSET_VERSION = '3.0.3';
+const ASSET_VERSION = '3.1.0';
 const advisorImage = (advisor) => `${advisor.image}?v=${ASSET_VERSION}`;
-
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const HISTORY_KEY = 'orbita_readings_v2';
-const PENDING_KEY = 'orbita_pending_session_v2';
-const SELECTION_KEY = 'orbita_booking_selection_v2';
+
+const HISTORY_KEY = 'orbita_readings_v3';
+const PENDING_KEY = 'orbita_pending_session_v3';
+const SELECTION_KEY = 'orbita_booking_selection_v3';
+const CHAT_KEY = 'orbita_chat_state_v1';
 const PAID_PENDING_KEY = 'orbita_pending_paid_reading_v1';
 
 let activeReading = null;
@@ -25,40 +26,145 @@ let toastTimer = null;
 let deferredInstallPrompt = null;
 let statusTimer = null;
 let sessionTimer = null;
+let chatBusy = false;
+let chatState = null;
+let chatSnapshots = [];
+
+const CATEGORY_LABELS = {
+  work:'仕事・転職',
+  love:'恋愛',
+  relationship:'人間関係',
+  money:'お金',
+  life:'人生・将来',
+  other:'その他'
+};
+
+const TIMEFRAME_LABELS = {
+  '7days':'7日以内',
+  '1month':'1か月以内',
+  '3months':'3か月以内',
+  '1year':'1年以内'
+};
+
+const CHAT_STEPS = [
+  {
+    key:'nickname',
+    type:'text',
+    prompt:'まず、鑑定の中でお呼びする名前を教えてください。本名でなくて構いません。',
+    label:'呼び名',
+    placeholder:'例：ミナ',
+    validate:(value) => value.trim().length ? '' : '呼び名を入力してください。',
+    acknowledge:(value) => `${value}さんですね。ありがとうございます。`
+  },
+  {
+    key:'birthdate',
+    type:'date',
+    prompt:'次に、生年月日を教えてください。数秘術や時期の計算に使います。',
+    label:'生年月日',
+    validate:(value) => /^\d{4}-\d{2}-\d{2}$/.test(value) ? '' : '生年月日を選択してください。',
+    acknowledge:() => '確認しました。'
+  },
+  {
+    key:'category',
+    type:'choice',
+    prompt:'今回の相談に一番近い分野を選んでください。',
+    choices:[
+      ['love','恋愛'],['work','仕事・転職'],['relationship','人間関係'],['money','お金'],['life','人生・将来'],['other','その他']
+    ],
+    acknowledge:(value) => `${CATEGORY_LABELS[value]}についての相談ですね。`
+  },
+  {
+    key:'question',
+    type:'textarea',
+    prompt:'いま迷っていることを、できる範囲で教えてください。短くても大丈夫です。',
+    label:'相談内容',
+    placeholder:'例：今の仕事を続けるか、新しい環境へ移るか迷っています。',
+    validate:(value) => value.trim().length >= 8 ? '' : '相談内容を8文字以上で入力してください。',
+    acknowledge:() => '内容を受け取りました。次に、二つの選択肢を確認します。'
+  },
+  {
+    key:'optionA',
+    type:'text',
+    prompt:'選択肢Aを、短い言葉で入力してください。',
+    label:'選択肢A',
+    placeholder:'例：今の仕事を続ける',
+    validate:(value) => value.trim().length ? '' : '選択肢Aを入力してください。',
+    acknowledge:(value) => `Aは「${value}」ですね。`
+  },
+  {
+    key:'optionB',
+    type:'text',
+    prompt:'選択肢Bを入力してください。Aとは違う内容にしてください。',
+    label:'選択肢B',
+    placeholder:'例：新しい仕事へ移る',
+    validate:(value, answers) => {
+      if (!value.trim()) return '選択肢Bを入力してください。';
+      if (value.trim() === String(answers.optionA || '').trim()) return 'AとBは違う内容にしてください。';
+      return '';
+    },
+    acknowledge:(value) => `Bは「${value}」ですね。AとBの違いを整理します。`
+  },
+  {
+    key:'timeframe',
+    type:'choice',
+    prompt:'どのくらいの期間で考えたいですか？',
+    choices:[['7days','7日以内'],['1month','1か月以内'],['3months','3か月以内'],['1year','1年以内']],
+    acknowledge:(value) => `${TIMEFRAME_LABELS[value]}を目安に考えます。`
+  },
+  {
+    key:'tension',
+    type:'choice',
+    prompt:'今の迷いの強さを、1から10で選んでください。1は軽い迷い、10はかなり強い迷いです。',
+    choices:Array.from({ length:10 },(_,index) => [String(index + 1),String(index + 1)]),
+    acknowledge:(value) => `迷いの強さは${value}/10ですね。行動の大きさを調整するために使います。`
+  },
+  {
+    key:'method',
+    type:'method',
+    prompt:'最後に、今回使う占い方法を選んでください。',
+    acknowledge:(value) => `${getMethod(value).name}でまとめます。`
+  },
+  {
+    key:'confirm',
+    type:'confirm',
+    prompt:'入力内容をまとめました。内容を確認して、予約を確定してください。'
+  }
+];
 
 function localISODate(date = new Date()) {
   const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
   return `${y}-${m}-${d}`;
 }
 
 function escapeHTML(value) {
-  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+  return String(value ?? '').replace(/[&<>'"]/g,(char) => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[char]));
 }
 
 function showToast(message) {
   const toast = $('#toast');
+  if (!toast) return;
   toast.textContent = message;
   toast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => toast.classList.remove('show'),2600);
 }
 
-function routeTo(route, pushHash = true) {
+function routeTo(route,pushHash = true) {
   const target = document.querySelector(`[data-view="${route}"]`) || $('[data-view="home"]');
-  $$('.view').forEach((view) => view.classList.toggle('active', view === target));
-  if (pushHash && location.hash !== `#${route}`) history.pushState(null, '', `#${route}`);
+  $$('.view').forEach((view) => view.classList.toggle('active',view === target));
+  if (pushHash && location.hash !== `#${route}`) history.pushState(null,'',`#${route}`);
   $('.site-nav')?.classList.remove('open');
-  $('.menu-toggle')?.setAttribute('aria-expanded', 'false');
+  $('.menu-toggle')?.setAttribute('aria-expanded','false');
   if (route === 'history') renderHistory();
   if (route === 'advisors') renderAdvisorPage();
-  if (route === 'reading') prepareReadingView();
-  window.scrollTo({ top:0, behavior:'smooth' });
-  setTimeout(() => $('#app')?.focus({ preventScroll:true }), 50);
+  if (route === 'chat') renderChat();
+  window.scrollTo({ top:0,behavior:'smooth' });
+  setTimeout(() => $('#app')?.focus({ preventScroll:true }),50);
 }
 
-function readJsonStorage(key, fallback) {
+function readJsonStorage(key,fallback) {
   try {
     const value = JSON.parse(localStorage.getItem(key) || 'null');
     return value ?? fallback;
@@ -68,30 +174,30 @@ function readJsonStorage(key, fallback) {
 }
 
 function getHistory() {
-  const parsed = readJsonStorage(HISTORY_KEY, []);
+  const parsed = readJsonStorage(HISTORY_KEY,[]);
   return Array.isArray(parsed) ? parsed : [];
 }
 
 function saveReading(reading) {
   const items = getHistory().filter((item) => item.readingId !== reading.readingId);
   items.unshift(reading);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, APP_CONFIG.historyLimit)));
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(items.slice(0,APP_CONFIG.historyLimit)));
 }
 
 function deleteReading(readingId) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(getHistory().filter((item) => item.readingId !== readingId)));
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(getHistory().filter((item) => item.readingId !== readingId)));
   renderHistory();
   showToast('履歴を削除しました');
 }
 
 function clearHistory() {
-  if (!window.confirm('この端末に保存された鑑定履歴をすべて削除しますか？')) return;
+  if (!window.confirm('この端末に保存した鑑定履歴をすべて削除しますか？')) return;
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
   showToast('すべての履歴を削除しました');
 }
 
-function ageOnDate(birthdate, reference = new Date()) {
+function ageOnDate(birthdate,reference = new Date()) {
   const birth = new Date(`${birthdate}T12:00:00`);
   if (Number.isNaN(birth.getTime())) return 0;
   let age = reference.getFullYear() - birth.getFullYear();
@@ -101,20 +207,20 @@ function ageOnDate(birthdate, reference = new Date()) {
 }
 
 function statusFor(advisorId) {
-  return advisorStatuses.find((item) => item.advisorId === advisorId) || { key:'loading', label:'確認中', detail:'受付状況を取得中' };
+  return advisorStatuses.find((item) => item.advisorId === advisorId) || { key:'loading',label:'確認中',detail:'受付状況を確認しています' };
 }
 
 function statusBadge(status) {
   return `<span class="advisor-status status-${escapeHTML(status.key)}"><i></i>${escapeHTML(status.label)}</span>`;
 }
 
-function advisorCardHTML(advisor, compact = false) {
+function advisorCardHTML(advisor,compact = false) {
   const status = statusFor(advisor.id);
-  const methods = advisor.methods.slice(0, compact ? 2 : 3).map((id) => getMethod(id).name).join('・');
+  const methods = advisor.methods.slice(0,compact ? 2 : 3).map((id) => getMethod(id).name).join('・');
   return `
     <article class="advisor-card ${compact ? 'compact' : ''}" data-advisor-card="${escapeHTML(advisor.id)}">
       <div class="advisor-image-wrap">
-        <img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}のイメージ" loading="lazy" width="900" height="600">
+        <img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}" loading="lazy" width="900" height="600">
         <div class="advisor-image-copy">
           <h3>${escapeHTML(advisor.name)}</h3>
           <div class="advisor-meta"><span>${advisor.age}歳</span><span>${escapeHTML(advisor.gender)}</span><span>${escapeHTML(advisor.nationality)}</span></div>
@@ -122,13 +228,10 @@ function advisorCardHTML(advisor, compact = false) {
       </div>
       <div class="advisor-card-body">
         <p class="advisor-type">${escapeHTML(advisor.type)}</p>
-        ${compact ? '' : `<p class="advisor-specialties">${advisor.specialties.map((item) => escapeHTML(item)).join('・')}</p>`}
+        ${compact ? '' : `<p class="advisor-specialties">${advisor.specialties.map(escapeHTML).join('・')}</p>`}
         ${compact ? '' : `<p class="advisor-methods">${escapeHTML(methods)}</p>`}
-        <div class="advisor-card-status-row">
-          ${statusBadge(status)}
-          <small class="advisor-next">${escapeHTML(status.detail || '')}${status.demo ? '・端末内デモ' : ''}</small>
-        </div>
-        <button class="button ${status.key === 'busy' ? 'ghost' : 'primary'} advisor-book-button" type="button" data-book-advisor="${escapeHTML(advisor.id)}">予約枠を見る</button>
+        <div class="advisor-card-status-row">${statusBadge(status)}<small class="advisor-next">${escapeHTML(status.detail || '')}</small></div>
+        <button class="button ${status.key === 'busy' ? 'ghost' : 'primary'} advisor-book-button" type="button" data-book-advisor="${escapeHTML(advisor.id)}">空いている時間を見る</button>
       </div>
     </article>`;
 }
@@ -142,10 +245,8 @@ async function refreshStatuses() {
 function renderHomeAdvisors() {
   const root = $('#home-advisor-grid');
   if (!root) return;
-  const ranked = [...ADVISORS].sort((a,b) => {
-    const order = { available:0, busy:1, full:2, off:3, loading:4 };
-    return (order[statusFor(a.id).key] ?? 9) - (order[statusFor(b.id).key] ?? 9);
-  }).slice(0,4);
+  const order = { available:0,busy:1,full:2,off:3,loading:4 };
+  const ranked = [...ADVISORS].sort((a,b) => (order[statusFor(a.id).key] ?? 9) - (order[statusFor(b.id).key] ?? 9)).slice(0,4);
   root.innerHTML = ranked.map((advisor) => advisorCardHTML(advisor,true)).join('');
   bindAdvisorButtons(root);
 }
@@ -155,15 +256,11 @@ function filteredAdvisors() {
   if (activeFilter === 'available') advisors = advisors.filter((advisor) => statusFor(advisor.id).key === 'available');
   if (activeFilter === '女性' || activeFilter === '男性') advisors = advisors.filter((advisor) => advisor.gender === activeFilter);
   if (activeGenreFilter !== 'all') advisors = advisors.filter((advisor) => advisor.genres.includes(activeGenreFilter));
-
   if (advisorSort === 'availability') {
-    const order = { available:0, busy:1, full:2, off:3, loading:4 };
+    const order = { available:0,busy:1,full:2,off:3,loading:4 };
     advisors.sort((a,b) => (order[statusFor(a.id).key] ?? 9) - (order[statusFor(b.id).key] ?? 9));
-  } else if (advisorSort === 'age-asc') {
-    advisors.sort((a,b) => a.age - b.age);
-  } else if (advisorSort === 'age-desc') {
-    advisors.sort((a,b) => b.age - a.age);
-  }
+  } else if (advisorSort === 'age-asc') advisors.sort((a,b) => a.age - b.age);
+  else if (advisorSort === 'age-desc') advisors.sort((a,b) => b.age - a.age);
   return advisors;
 }
 
@@ -171,22 +268,20 @@ function renderAdvisorPage() {
   const root = $('#advisor-grid');
   if (!root) return;
   const advisors = filteredAdvisors();
-  root.innerHTML = advisors.length ? advisors.map((advisor) => advisorCardHTML(advisor)).join('') : '<div class="history-empty">該当する鑑定者はいません。</div>';
+  root.innerHTML = advisors.length ? advisors.map((advisor) => advisorCardHTML(advisor)).join('') : '<div class="history-empty">条件に合う鑑定パートナーが見つかりませんでした。</div>';
   bindAdvisorButtons(root);
-  $$('.filter-chip').forEach((chip) => chip.classList.toggle('active', chip.dataset.advisorFilter === activeFilter));
-  const genreSelect = $('#advisor-genre-filter');
-  if (genreSelect) genreSelect.value = activeGenreFilter;
-  const sortSelect = $('#advisor-sort');
-  if (sortSelect) sortSelect.value = advisorSort;
+  $$('.filter-chip').forEach((chip) => chip.classList.toggle('active',chip.dataset.advisorFilter === activeFilter));
+  if ($('#advisor-genre-filter')) $('#advisor-genre-filter').value = activeGenreFilter;
+  if ($('#advisor-sort')) $('#advisor-sort').value = advisorSort;
 }
 
 function bindAdvisorButtons(root = document) {
-  $$('[data-book-advisor]', root).forEach((button) => button.addEventListener('click', () => openBookingModal(button.dataset.bookAdvisor)));
+  $$('[data-book-advisor]',root).forEach((button) => button.addEventListener('click',() => openBookingModal(button.dataset.bookAdvisor)));
 }
 
 function scheduleSummary(advisor) {
   const weekday = ['日','月','火','水','木','金','土'];
-  return Object.entries(advisor.schedule).map(([day,windows]) => `${weekday[Number(day)]} ${windows.map((window) => window.join('–')).join(' / ')}`).join('　');
+  return Object.entries(advisor.schedule).map(([day,windows]) => `${weekday[Number(day)]} ${windows.map((window) => window.join('〜')).join(' / ')}`).join('　');
 }
 
 function closeBookingModal() {
@@ -194,21 +289,21 @@ function closeBookingModal() {
   document.body.classList.remove('modal-open');
 }
 
-async function renderModalSlots(advisor, dateKey) {
+async function renderModalSlots(advisor,dateKey) {
   const root = $('#modal-slot-list');
   if (!root) return;
-  root.innerHTML = '<div class="slot-loading">空き枠を確認しています…</div>';
+  root.innerHTML = '<div class="slot-loading">空いている時間を確認しています…</div>';
   const slots = await getAvailability(advisor.id,dateKey);
   if (!$('#modal-slot-list')) return;
   root.innerHTML = slots.length
-    ? slots.map((slot) => `<button class="slot-button" type="button" data-slot-start="${escapeHTML(slot.startAt)}" data-slot-ready="${escapeHTML(slot.readyAt)}" ${slot.available ? '' : 'disabled'}><strong>${escapeHTML(slot.timeKey)}</strong><small>${slot.available ? '予約可' : '予約済み'}</small></button>`).join('')
-    : '<div class="slot-empty">この日の受付枠はありません。</div>';
-  $$('[data-slot-start]',root).forEach((button) => button.addEventListener('click', () => {
+    ? slots.map((slot) => `<button class="slot-button" type="button" data-slot-start="${escapeHTML(slot.startAt)}" data-slot-ready="${escapeHTML(slot.readyAt)}" ${slot.available ? '' : 'disabled'}><strong>${escapeHTML(slot.timeKey)}</strong><small>${slot.available ? '予約できます' : '予約済み'}</small></button>`).join('')
+    : '<div class="slot-empty">この日の受付時間はありません。</div>';
+  $$('[data-slot-start]',root).forEach((button) => button.addEventListener('click',() => {
     selectedAdvisorId = advisor.id;
-    selectedSlot = { startAt:button.dataset.slotStart, readyAt:button.dataset.slotReady };
-    sessionStorage.setItem(SELECTION_KEY, JSON.stringify({ advisorId:selectedAdvisorId, slot:selectedSlot }));
+    selectedSlot = { startAt:button.dataset.slotStart,readyAt:button.dataset.slotReady };
+    sessionStorage.setItem(SELECTION_KEY,JSON.stringify({ advisorId:selectedAdvisorId,slot:selectedSlot }));
     closeBookingModal();
-    routeTo('reading');
+    startChat(true);
   }));
 }
 
@@ -230,12 +325,12 @@ function openBookingModal(advisorId) {
       </div>
       <div class="date-tabs">${dates.map((dateKey,index) => `<button class="date-tab ${index === 0 ? 'active' : ''}" type="button" data-booking-date="${dateKey}">${escapeHTML(formatDateLabel(dateKey))}</button>`).join('')}</div>
       <div id="modal-slot-list" class="slot-list"></div>
-      <p class="booking-note">各枠は1名限定です。予約時刻から約${Math.round(BOOKING_CONFIG.readingDurationSeconds / 60)}分後に結果を表示します。相談内容は予約サーバーへ保存しません。</p>
+      <p class="booking-note">空いている時間を選ぶと、チャット相談へ進みます。予約後は約${Math.round(BOOKING_CONFIG.readingDurationSeconds / 60)}分で結果を表示します。</p>
     </section>`;
   document.body.append(modal);
   document.body.classList.add('modal-open');
   $$('[data-close-modal]',modal).forEach((button) => button.addEventListener('click',closeBookingModal));
-  $$('[data-booking-date]',modal).forEach((button) => button.addEventListener('click', () => {
+  $$('[data-booking-date]',modal).forEach((button) => button.addEventListener('click',() => {
     $$('.date-tab',modal).forEach((tab) => tab.classList.toggle('active',tab === button));
     renderModalSlots(advisor,button.dataset.bookingDate);
   }));
@@ -256,62 +351,328 @@ function restoreSelection() {
   }
 }
 
-function prepareReadingView() {
-  const advisor = getAdvisor(selectedAdvisorId);
-  const card = $('#selected-advisor-card');
-  const form = $('#reading-form');
-  if (!card || !form) return;
-  if (!advisor || !selectedSlot) {
-    card.innerHTML = '<div class="selection-missing"><p>鑑定者と予約日時がまだ選択されていません。</p><button class="button primary" type="button" data-go-advisors>鑑定者を選ぶ</button></div>';
-    form.elements.advisorId.value = '';
-    form.elements.slotStart.value = '';
-    $('#method-select').innerHTML = '<option>先に鑑定者を選択してください</option>';
-    $('#selected-slot-label').textContent = '未選択';
-    $('[data-go-advisors]')?.addEventListener('click', () => routeTo('advisors'));
-    return;
-  }
-  const status = statusFor(advisor.id);
-  card.innerHTML = `<img src="${escapeHTML(advisorImage(advisor))}" alt="" width="120" height="160"><div>${statusBadge(status)}<h3>${escapeHTML(advisor.name)}</h3><p>${escapeHTML(advisor.type)}・${advisor.age}歳・${escapeHTML(advisor.nationality)}</p><small>${escapeHTML(advisor.tagline)}</small></div>`;
-  form.elements.advisorId.value = advisor.id;
-  form.elements.slotStart.value = selectedSlot.startAt;
-  $('#selected-slot-label').textContent = formatDateTimeJst(selectedSlot.startAt);
-  const select = $('#method-select');
-  select.innerHTML = advisor.methods.map((methodId) => {
-    const method = getMethod(methodId);
-    return `<option value="${escapeHTML(method.id)}">${escapeHTML(method.name)}｜${escapeHTML(method.short)}</option>`;
-  }).join('');
-  updateFormProgress();
-  maybeFillSampleForm();
+function emptyChatState() {
+  return { step:0,answers:{},messages:[],startedAt:new Date().toISOString() };
 }
 
-function formDataToInput(form) {
-  const data = new FormData(form);
-  const advisor = getAdvisor(data.get('advisorId'));
+function saveChatState() {
+  if (chatState) sessionStorage.setItem(CHAT_KEY,JSON.stringify(chatState));
+}
+
+function loadChatState() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(CHAT_KEY) || 'null');
+    if (saved && typeof saved.step === 'number' && saved.answers && Array.isArray(saved.messages)) return saved;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function addChatMessage(role,text) {
+  chatState.messages.push({ role,text:String(text),createdAt:new Date().toISOString() });
+  saveChatState();
+  renderChatMessages();
+}
+
+function addTypingMessage() {
+  const root = $('#chat-messages');
+  if (!root) return null;
+  const node = document.createElement('div');
+  node.className = 'chat-message agent chat-typing-row';
+  node.innerHTML = '<span class="chat-avatar">✦</span><div class="chat-bubble"><span class="chat-typing"><i></i><i></i><i></i></span></div>';
+  root.append(node);
+  root.scrollTop = root.scrollHeight;
+  return node;
+}
+
+async function requestAgentReply(stepKey,userMessage,fallback,nextPrompt) {
+  if (!APP_CONFIG.agentChatMode || !APP_CONFIG.apiBaseUrl) return `${fallback}\n\n${nextPrompt}`;
+  try {
+    const response = await fetch(`${APP_CONFIG.apiBaseUrl}/api/chat`,{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({
+        advisorId:selectedAdvisorId,
+        step:stepKey,
+        userMessage,
+        answers:chatState.answers,
+        nextQuestion:nextPrompt
+      })
+    });
+    if (!response.ok) throw new Error('chat_failed');
+    const data = await response.json();
+    if (typeof data.reply !== 'string' || data.reply.length < 3) throw new Error('invalid_reply');
+    return data.reply;
+  } catch {
+    return `${fallback}\n\n${nextPrompt}`;
+  }
+}
+
+function startChat(reset = false) {
+  const advisor = getAdvisor(selectedAdvisorId);
+  if (!advisor || !selectedSlot) {
+    routeTo('advisors');
+    showToast('先に鑑定パートナーと予約時間を選んでください');
+    return;
+  }
+  if (reset) {
+    chatState = emptyChatState();
+    chatSnapshots = [];
+    chatState.messages.push({ role:'agent',text:`${advisor.name}です。ご予約ありがとうございます。`,createdAt:new Date().toISOString() });
+    chatState.messages.push({ role:'agent',text:'一度に全部書かなくて大丈夫です。表示する質問に、順番に答えてください。',createdAt:new Date().toISOString() });
+    chatState.messages.push({ role:'agent',text:CHAT_STEPS[0].prompt,createdAt:new Date().toISOString() });
+    saveChatState();
+  } else if (!chatState) {
+    chatState = loadChatState() || emptyChatState();
+  }
+  routeTo('chat');
+}
+
+function renderChatHead() {
+  const root = $('#chat-advisor-head');
+  const advisor = getAdvisor(selectedAdvisorId);
+  if (!root || !advisor || !selectedSlot) return;
+  root.innerHTML = `
+    <img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}" width="88" height="88">
+    <div><h2 id="chat-title">${escapeHTML(advisor.name)}</h2><p>${escapeHTML(advisor.type)}｜${escapeHTML(advisor.tagline)}</p><small>予約時間：${escapeHTML(formatDateTimeJst(selectedSlot.startAt))}</small></div>
+    <button class="mini-button chat-change-button" id="change-chat-reservation" type="button">相手・時間を変更</button>`;
+  $('#change-chat-reservation')?.addEventListener('click',() => openBookingModal(selectedAdvisorId));
+}
+
+function renderChatMessages() {
+  const root = $('#chat-messages');
+  if (!root || !chatState) return;
+  root.innerHTML = chatState.messages.map((message) => {
+    if (message.role === 'system') return `<div class="chat-message system"><div class="chat-bubble">${escapeHTML(message.text)}</div></div>`;
+    if (message.role === 'user') return `<div class="chat-message user"><div class="chat-bubble">${escapeHTML(message.text)}</div></div>`;
+    return `<div class="chat-message agent"><span class="chat-avatar">✦</span><div class="chat-bubble">${escapeHTML(message.text)}</div></div>`;
+  }).join('');
+  root.scrollTop = root.scrollHeight;
+}
+
+function maxBirthdate() {
+  const max = new Date();
+  max.setFullYear(max.getFullYear() - 18);
+  return localISODate(max);
+}
+
+function choiceButtons(choices) {
+  return `<div class="chat-choice-list">${choices.map(([value,label]) => `<button class="chat-choice" type="button" data-chat-choice="${escapeHTML(value)}" data-chat-label="${escapeHTML(label)}">${escapeHTML(label)}</button>`).join('')}</div>`;
+}
+
+function chatSummaryHTML() {
+  const advisor = getAdvisor(selectedAdvisorId);
+  const a = chatState.answers;
+  return `
+    <div class="chat-summary">
+      <dl>
+        <dt>鑑定パートナー</dt><dd>${escapeHTML(advisor?.name || '')}</dd>
+        <dt>予約時間</dt><dd>${escapeHTML(formatDateTimeJst(selectedSlot.startAt))}</dd>
+        <dt>呼び名</dt><dd>${escapeHTML(a.nickname || '')}</dd>
+        <dt>相談分野</dt><dd>${escapeHTML(CATEGORY_LABELS[a.category] || a.category || '')}</dd>
+        <dt>相談内容</dt><dd>${escapeHTML(a.question || '')}</dd>
+        <dt>選択肢A</dt><dd>${escapeHTML(a.optionA || '')}</dd>
+        <dt>選択肢B</dt><dd>${escapeHTML(a.optionB || '')}</dd>
+        <dt>考えたい期間</dt><dd>${escapeHTML(TIMEFRAME_LABELS[a.timeframe] || '')}</dd>
+        <dt>迷いの強さ</dt><dd>${escapeHTML(a.tension || '')}/10</dd>
+        <dt>占い方法</dt><dd>${escapeHTML(getMethod(a.method).name)}</dd>
+      </dl>
+    </div>`;
+}
+
+function renderChatControls() {
+  const root = $('#chat-controls');
+  const back = $('#chat-back');
+  if (!root || !chatState) return;
+  const step = CHAT_STEPS[chatState.step] || CHAT_STEPS.at(-1);
+  const progress = Math.min(100,Math.round((chatState.step / (CHAT_STEPS.length - 1)) * 100));
+  if ($('#chat-progress-bar')) $('#chat-progress-bar').style.width = `${progress}%`;
+  if (back) back.disabled = chatSnapshots.length === 0 || chatBusy;
+
+  if (step.type === 'choice') {
+    root.innerHTML = `${choiceButtons(step.choices)}<p class="chat-helper">一つ選んでください。</p>`;
+    $$('[data-chat-choice]',root).forEach((button) => button.addEventListener('click',() => handleChatAnswer(button.dataset.chatChoice,button.dataset.chatLabel)));
+    return;
+  }
+
+  if (step.type === 'method') {
+    const advisor = getAdvisor(selectedAdvisorId);
+    const choices = advisor.methods.map((id) => [id,`${getMethod(id).name}｜${getMethod(id).short}`]);
+    root.innerHTML = `${choiceButtons(choices)}<p class="chat-helper">迷った場合は、一番上の方法で問題ありません。</p>`;
+    $$('[data-chat-choice]',root).forEach((button) => button.addEventListener('click',() => handleChatAnswer(button.dataset.chatChoice,button.dataset.chatLabel)));
+    return;
+  }
+
+  if (step.type === 'confirm') {
+    root.innerHTML = `
+      <div class="chat-confirm">
+        ${chatSummaryHTML()}
+        <label class="chat-consent"><input id="chat-adult" type="checkbox"><span>18歳以上であり、この鑑定が悩みを整理するための参考情報であることを確認しました。</span></label>
+        <label class="chat-consent"><input id="chat-save-history" type="checkbox"><span>この端末に鑑定履歴を保存する</span></label>
+        <div id="chat-confirm-error" class="chat-error" hidden></div>
+        <div class="chat-confirm-actions"><button id="chat-confirm-booking" class="button primary" type="button">この内容で予約を確定</button></div>
+      </div>`;
+    $('#chat-confirm-booking')?.addEventListener('click',submitChatReservation);
+    return;
+  }
+
+  const inputType = step.type === 'date' ? 'date' : 'text';
+  const element = step.type === 'textarea'
+    ? `<textarea id="chat-input" class="chat-textarea" rows="4" maxlength="300" placeholder="${escapeHTML(step.placeholder || '')}"></textarea>`
+    : `<input id="chat-input" class="${step.type === 'date' ? 'chat-date' : 'chat-input'}" type="${inputType}" ${step.type === 'date' ? `max="${maxBirthdate()}" min="1900-01-01"` : 'maxlength="120"'} placeholder="${escapeHTML(step.placeholder || '')}">`;
+  root.innerHTML = `
+    <div class="chat-input-row">
+      <div class="chat-input-wrap"><label for="chat-input">${escapeHTML(step.label || '回答')}</label>${element}<div id="chat-input-error" class="chat-error" hidden></div></div>
+      <button id="chat-send" class="button primary chat-send" type="button">送信</button>
+    </div>
+    <p class="chat-helper">Enterでも送信できます。長文は改行して構いません。</p>`;
+  const input = $('#chat-input');
+  const submit = () => handleChatAnswer(input.value,input.value);
+  $('#chat-send')?.addEventListener('click',submit);
+  input?.addEventListener('keydown',(event) => {
+    if (event.key === 'Enter' && !(step.type === 'textarea' && event.shiftKey)) {
+      event.preventDefault();
+      submit();
+    }
+  });
+  setTimeout(() => input?.focus(),50);
+}
+
+function renderChat() {
+  if (!selectedAdvisorId || !selectedSlot) {
+    restoreSelection();
+    if (!selectedAdvisorId || !selectedSlot) { routeTo('advisors'); return; }
+  }
+  if (!chatState) chatState = loadChatState();
+  if (!chatState) {
+    startChat(true);
+    return;
+  }
+  renderChatHead();
+  renderChatMessages();
+  renderChatControls();
+}
+
+async function handleChatAnswer(value,label) {
+  if (chatBusy || !chatState) return;
+  const step = CHAT_STEPS[chatState.step];
+  if (!step || step.type === 'confirm') return;
+  const cleanValue = String(value ?? '').trim();
+  const error = step.validate ? step.validate(cleanValue,chatState.answers) : '';
+  if (error) {
+    const box = $('#chat-input-error');
+    if (box) { box.hidden = false; box.textContent = error; }
+    else showToast(error);
+    return;
+  }
+
+  chatSnapshots.push(JSON.stringify(chatState));
+  chatBusy = true;
+  renderChatControls();
+  addChatMessage('user',label || cleanValue);
+  chatState.answers[step.key] = cleanValue;
+  chatState.step += 1;
+  saveChatState();
+  const nextStep = CHAT_STEPS[chatState.step];
+  const typing = addTypingMessage();
+  const fallback = step.acknowledge ? step.acknowledge(cleanValue) : 'ありがとうございます。';
+  const nextPrompt = nextStep?.prompt || '';
+  const reply = await requestAgentReply(step.key,cleanValue,fallback,nextPrompt);
+  await new Promise((resolve) => setTimeout(resolve,480));
+  typing?.remove();
+  addChatMessage('agent',reply);
+  chatBusy = false;
+  renderChatControls();
+}
+
+function backChat() {
+  if (chatBusy || !chatSnapshots.length) return;
+  try {
+    chatState = JSON.parse(chatSnapshots.pop());
+    saveChatState();
+    renderChat();
+  } catch { /* ignore */ }
+}
+
+function resetChat() {
+  if (!window.confirm('チャット内容を消して、最初からやり直しますか？')) return;
+  sessionStorage.removeItem(CHAT_KEY);
+  startChat(true);
+}
+
+function buildReadingInput() {
+  const advisor = getAdvisor(selectedAdvisorId);
+  const a = chatState.answers;
   return {
-    nickname:data.get('nickname'), birthdate:data.get('birthdate'), category:data.get('category'), question:data.get('question'),
-    optionA:data.get('optionA'), optionB:data.get('optionB'), timeframe:data.get('timeframe'), tension:data.get('tension'),
-    readingDate:data.get('slotStart') ? toJstParts(new Date(data.get('slotStart'))).dateKey : localISODate(), advisorId:advisor?.id || '', advisorName:advisor?.name || '', advisorTone:advisor?.tone || 'rational',
-    method:data.get('method'), bookingStart:data.get('slotStart')
+    nickname:a.nickname,
+    birthdate:a.birthdate,
+    category:a.category,
+    question:a.question,
+    optionA:a.optionA,
+    optionB:a.optionB,
+    timeframe:a.timeframe,
+    tension:Number(a.tension || 5),
+    readingDate:toJstParts(new Date(selectedSlot.startAt)).dateKey,
+    advisorId:advisor?.id || '',
+    advisorName:advisor?.name || '',
+    advisorTone:advisor?.tone || 'rational',
+    method:a.method || advisor?.methods?.[0] || 'decision',
+    bookingStart:selectedSlot.startAt
   };
 }
 
-function showErrors(messages) {
-  const box = $('#form-errors');
-  if (!messages.length) { box.hidden = true; box.textContent = ''; return; }
-  box.hidden = false;
-  box.innerHTML = `<strong>入力内容をご確認ください。</strong><ul>${messages.map((message) => `<li>${escapeHTML(message)}</li>`).join('')}</ul>`;
-  box.scrollIntoView({ behavior:'smooth', block:'center' });
+async function submitChatReservation() {
+  const errorBox = $('#chat-confirm-error');
+  const adult = $('#chat-adult')?.checked;
+  if (!adult) {
+    if (errorBox) { errorBox.hidden = false; errorBox.textContent = '18歳以上であることと、注意事項の確認が必要です。'; }
+    return;
+  }
+  const input = buildReadingInput();
+  if (ageOnDate(input.birthdate) < 18) {
+    if (errorBox) { errorBox.hidden = false; errorBox.textContent = 'このサービスは18歳以上の方が利用できます。'; }
+    return;
+  }
+  const result = generateReading(input);
+  if (result.safety?.level === 'stop') {
+    if (errorBox) { errorBox.hidden = false; errorBox.textContent = result.safety.message; }
+    return;
+  }
+  if (!result.ok) {
+    if (errorBox) { errorBox.hidden = false; errorBox.textContent = (result.errors || ['入力内容を確認してください。']).join(' '); }
+    return;
+  }
+  const button = $('#chat-confirm-booking');
+  if (button) { button.disabled = true; button.textContent = '予約を確定しています…'; }
+  try {
+    const booking = await reserveBooking({ advisorId:selectedAdvisorId,startAt:selectedSlot.startAt,readyAt:selectedSlot.readyAt });
+    result.booking = { bookingId:booking.bookingId,startAt:booking.startAt,readyAt:booking.readyAt };
+    localStorage.setItem(PENDING_KEY,JSON.stringify({ booking,reading:result,saveHistory:Boolean($('#chat-save-history')?.checked) }));
+    sessionStorage.removeItem(CHAT_KEY);
+    showToast('予約を確定しました');
+    renderSession();
+  } catch (error) {
+    if (String(error.message).includes('slot_taken')) {
+      if (errorBox) { errorBox.hidden = false; errorBox.textContent = '選んだ時間が埋まりました。別の時間を選んでください。'; }
+      openBookingModal(selectedAdvisorId);
+    } else if (errorBox) {
+      errorBox.hidden = false;
+      errorBox.textContent = '予約に失敗しました。通信状態を確認して、もう一度お試しください。';
+    }
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'この内容で予約を確定'; }
+    refreshStatuses();
+  }
 }
 
-function meterDescription(value, kind) {
+function meterDescription(value,kind) {
   if (kind === 'reversibility') {
-    if (value >= 65) return '戻りながら試せる余地が大きい';
-    if (value >= 45) return '条件を決めれば小さく試せる';
-    return '実行前の確認と撤退条件が重要';
+    if (value >= 65) return 'やり直しや変更がしやすい';
+    if (value >= 45) return '条件を決めれば試しやすい';
+    return '始める前の確認が特に必要';
   }
-  if (value >= 75) return '方向の輪郭が比較的はっきりしている';
-  if (value >= 55) return '仮決定に十分な材料がある';
-  return '追加の事実確認が必要';
+  if (value >= 75) return '判断材料がかなりそろっている';
+  if (value >= 55) return '小さく決めるには十分';
+  return '追加の情報確認が必要';
 }
 
 function renderResult(reading) {
@@ -320,54 +681,56 @@ function renderResult(reading) {
   const root = $('#result-root');
   const advisor = getAdvisor(reading.input.advisorId);
   const method = getMethod(reading.input.method);
-  const cardLabels = ['現在の中心','見落としやすい点','次の一歩'];
+  const cardLabels = ['今の状況','気をつけたい点','次にやること'];
   const caution = reading.safety.level === 'caution' ? `<div class="result-warning"><strong>${escapeHTML(reading.safety.title)}</strong><br>${escapeHTML(reading.safety.message)}</div>` : '';
   root.innerHTML = `
     <div class="result-oracle-head">
-      ${advisor ? `<img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}のイメージ" width="180" height="240">` : ''}
-      <div><div class="reading-id">${escapeHTML(reading.readingId)}</div><p class="eyebrow">YOUR RESERVED ORBIT</p><h1>${escapeHTML(reading.nickname || reading.input.nickname)}さんの選択の星図</h1><p>${advisor ? `${escapeHTML(advisor.name)}・${escapeHTML(method.name)}による鑑定` : ''}</p><strong>${escapeHTML(reading.decision.text)}</strong></div>
+      ${advisor ? `<img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}" width="180" height="240">` : ''}
+      <div><div class="reading-id">${escapeHTML(reading.readingId)}</div><p class="eyebrow">YOUR READING</p><h1>${escapeHTML(reading.nickname || reading.input.nickname)}さんの鑑定結果</h1><p>${advisor ? `${escapeHTML(advisor.name)}｜${escapeHTML(method.name)}` : ''}</p><strong>${escapeHTML(reading.decision.text)}</strong><p class="result-explain">下の数字は成功率ではありません。今の状況で、どちらから試しやすいかを比べた目安です。</p></div>
     </div>
     ${caution}
     <div class="score-stage">
-      <article class="score-choice"><small>OPTION A</small><h2>${escapeHTML(reading.input.optionA)}</h2><div class="score-number">${reading.scores.a}<span>/100</span></div></article>
-      <div class="compass-score" style="--score-a:${reading.scores.a}%"><div><strong>${escapeHTML(reading.decision.text)}</strong><small>共鳴度は成功確率ではありません</small></div></div>
-      <article class="score-choice"><small>OPTION B</small><h2>${escapeHTML(reading.input.optionB)}</h2><div class="score-number">${reading.scores.b}<span>/100</span></div></article>
+      <article class="score-choice"><small>Aを試しやすい度</small><h2>${escapeHTML(reading.input.optionA)}</h2><div class="score-number">${reading.scores.a}<span>/100</span></div></article>
+      <div class="compass-score" style="--score-a:${reading.scores.a}%"><div><strong>${escapeHTML(reading.decision.text)}</strong><small>成功率ではありません</small></div></div>
+      <article class="score-choice"><small>Bを試しやすい度</small><h2>${escapeHTML(reading.input.optionB)}</h2><div class="score-number">${reading.scores.b}<span>/100</span></div></article>
     </div>
     <div class="metric-grid">
-      <article class="metric-card"><span>数の基調</span><strong>${reading.numerology.lifePath}</strong><p>長期的な判断傾向を示す基礎数</p></article>
-      <article class="metric-card"><span>可逆性指数</span><strong>${reading.reversibility}</strong><p>${escapeHTML(meterDescription(reading.reversibility,'reversibility'))}</p></article>
-      <article class="metric-card"><span>輪郭指数</span><strong>${reading.clarity}</strong><p>${escapeHTML(meterDescription(reading.clarity,'clarity'))}</p></article>
+      <article class="metric-card"><span>生年月日から出した基礎数</span><strong>${reading.numerology.lifePath}</strong><p>考え方や決め方の基本的な傾向</p></article>
+      <article class="metric-card"><span>やり直しやすさ</span><strong>${reading.reversibility}</strong><p>${escapeHTML(meterDescription(reading.reversibility,'reversibility'))}</p></article>
+      <article class="metric-card"><span>判断材料のそろい具合</span><strong>${reading.clarity}</strong><p>${escapeHTML(meterDescription(reading.clarity,'clarity'))}</p></article>
     </div>
-    <h2 class="cards-title">三枚の象徴札</h2>
+    <h2 class="cards-title">3枚の象徴カード</h2>
     <div class="archetype-grid">${reading.cards.map((card,index) => `<article class="archetype-card"><div class="position">${cardLabels[index]}</div><div class="glyph">${escapeHTML(card.glyph)}</div><h3>${escapeHTML(card.name)}</h3><p>${escapeHTML(index === 1 ? card.shadow : card.light)}</p><p><strong>行動：</strong>${escapeHTML(card.action)}</p></article>`).join('')}</div>
-    <h2 class="narrative-title">${advisor ? `${escapeHTML(advisor.name)}の読み解き` : '星図の読み解き'}</h2>
+    <h2 class="narrative-title">今回の読み解き</h2>
     <div class="narrative-grid">
-      <article class="narrative-card"><h3>全体の流れ</h3><p>${escapeHTML(reading.narrative.overview)}</p></article>
-      <article class="narrative-card"><h3>隠れた論点</h3><p>${escapeHTML(reading.narrative.hidden)}</p></article>
-      <article class="narrative-card"><h3>動く大きさ</h3><p>${escapeHTML(reading.narrative.timing)}</p></article>
-      <article class="narrative-card"><h3>今回の結び</h3><p>${escapeHTML(reading.narrative.closing)}</p></article>
+      <article class="narrative-card"><h3>今の状況</h3><p>${escapeHTML(reading.narrative.overview)}</p></article>
+      <article class="narrative-card"><h3>見落としやすい点</h3><p>${escapeHTML(reading.narrative.hidden)}</p></article>
+      <article class="narrative-card"><h3>動く前の確認</h3><p>${escapeHTML(reading.narrative.timing)}</p></article>
+      <article class="narrative-card"><h3>今回のまとめ</h3><p>${escapeHTML(reading.narrative.closing)}</p></article>
     </div>
-    <h2 class="plan-title">7日間の小さな実験</h2>
+    <h2 class="plan-title">次の7日間でできること</h2>
     <div class="plan-list">${reading.plan.map((item) => `<article class="plan-item"><div class="plan-day">DAY ${item.day}</div><strong>${escapeHTML(item.title)}</strong><p>${escapeHTML(item.body)}</p></article>`).join('')}</div>
-    ${reading.deep ? `<section class="deep-result"><p class="eyebrow">DEEP ORBIT / 90 DAYS</p><h2>90日深層星路</h2><div class="narrative-grid"><article class="narrative-card"><h3>Aの障害</h3><p>${escapeHTML(reading.deep.optionAObstacle)}</p></article><article class="narrative-card"><h3>Bの障害</h3><p>${escapeHTML(reading.deep.optionBObstacle)}</p></article><article class="narrative-card"><h3>撤退条件</h3><p>${escapeHTML(reading.deep.exitCondition)}</p></article><article class="narrative-card"><h3>90日後に残すもの</h3><p>${escapeHTML(reading.deep.ninetyDayFocus)}</p></article></div><div class="deep-weeks">${(reading.deep.weeks || []).map((week) => `<article><span>WEEK ${escapeHTML(week.week)}</span><h3>${escapeHTML(week.title)}</h3><p>${escapeHTML(week.action)}</p></article>`).join('')}</div><div class="narrative-card"><h3>深層鑑定の結び</h3><p>${escapeHTML(reading.deep.closing)}</p></div></section>` : ''}
-    <div class="deep-card"><div><p class="eyebrow">DEEP ORBIT / OPTIONAL</p><h2>${escapeHTML(APP_CONFIG.paidProductName)}</h2><p>無料鑑定を基礎に、90日間の流れ、A・Bそれぞれの障害、撤退条件、週単位の行動案をAIで個別生成する拡張機能です。</p></div><div><div class="deep-price">${escapeHTML(APP_CONFIG.paidPriceLabel)}<small>買い切り・自動納品</small></div><button id="deep-reading-button" class="button primary" type="button" ${reading.deep ? 'disabled' : ''}>${reading.deep ? '深層鑑定済み' : (APP_CONFIG.paidMode && APP_CONFIG.operatorReady ? '深層鑑定へ進む' : '運営設定後に開放')}</button></div></div>
-    <div class="result-actions"><button class="button ghost" id="share-result" type="button">結果を共有</button><button class="button ghost" id="download-result" type="button">JSON保存</button><button class="button ghost" id="print-result" type="button">印刷・PDF保存</button><a class="button primary" href="#advisors" data-route="advisors">別の鑑定を予約</a></div>
+    ${reading.deep ? `<section class="deep-result"><p class="eyebrow">90 DAY DETAIL</p><h2>90日間の詳しい鑑定</h2><div class="narrative-grid"><article class="narrative-card"><h3>Aで起こりやすい問題</h3><p>${escapeHTML(reading.deep.optionAObstacle)}</p></article><article class="narrative-card"><h3>Bで起こりやすい問題</h3><p>${escapeHTML(reading.deep.optionBObstacle)}</p></article><article class="narrative-card"><h3>やめる条件</h3><p>${escapeHTML(reading.deep.exitCondition)}</p></article><article class="narrative-card"><h3>90日後に残したいもの</h3><p>${escapeHTML(reading.deep.ninetyDayFocus)}</p></article></div><div class="deep-weeks">${(reading.deep.weeks || []).map((week) => `<article><span>WEEK ${escapeHTML(week.week)}</span><h3>${escapeHTML(week.title)}</h3><p>${escapeHTML(week.action)}</p></article>`).join('')}</div><div class="narrative-card"><h3>まとめ</h3><p>${escapeHTML(reading.deep.closing)}</p></div></section>` : ''}
+    <div class="deep-card"><div><p class="eyebrow">OPTIONAL</p><h2>${escapeHTML(APP_CONFIG.paidProductName)}</h2><p>今回の相談内容と結果をもとに、AとBそれぞれの注意点、やめる条件、4週間の行動案を詳しくまとめます。</p></div><div><div class="deep-price">${escapeHTML(APP_CONFIG.paidPriceLabel)}<small>買い切り・自動表示</small></div><button id="deep-reading-button" class="button primary" type="button" ${reading.deep ? 'disabled' : ''}>${reading.deep ? '詳しい鑑定を表示済み' : (APP_CONFIG.paidMode && APP_CONFIG.operatorReady ? '詳しい鑑定へ進む' : '準備中')}</button></div></div>
+    <div class="result-actions"><button class="button ghost" id="share-result" type="button">結果を共有</button><button class="button ghost" id="download-result" type="button">データを保存</button><button class="button ghost" id="print-result" type="button">印刷・PDF保存</button><a class="button primary" href="#advisors" data-route="advisors">別の相談をする</a></div>
     <p class="result-disclaimer">${escapeHTML(reading.disclaimer)}</p>`;
   localStorage.removeItem(PENDING_KEY);
   sessionStorage.removeItem(SELECTION_KEY);
+  sessionStorage.removeItem(CHAT_KEY);
   selectedAdvisorId = '';
   selectedSlot = null;
+  chatState = null;
   routeTo('result');
   bindResultActions();
   refreshStatuses();
 }
 
 async function createPaidCheckout() {
-  if (!APP_CONFIG.paidMode || !APP_CONFIG.operatorReady) { showToast('有料機能は運営者情報と決済設定後に開放されます'); return; }
-  if (!APP_CONFIG.apiBaseUrl) { showToast('API接続先が設定されていません'); return; }
+  if (!APP_CONFIG.paidMode || !APP_CONFIG.operatorReady) { showToast('詳しい鑑定は現在準備中です'); return; }
+  if (!APP_CONFIG.apiBaseUrl) { showToast('接続設定が完了していません'); return; }
   try {
     sessionStorage.setItem(PAID_PENDING_KEY,JSON.stringify(activeReading));
-    const response = await fetch(`${APP_CONFIG.apiBaseUrl}/api/create-checkout`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ readingId:activeReading.readingId, reading:activeReading }) });
+    const response = await fetch(`${APP_CONFIG.apiBaseUrl}/api/create-checkout`,{ method:'POST',headers:{ 'Content-Type':'application/json' },body:JSON.stringify({ readingId:activeReading.readingId,reading:activeReading }) });
     if (!response.ok) throw new Error('checkout_failed');
     const data = await response.json();
     if (!data.url) throw new Error('checkout_url_missing');
@@ -380,14 +743,18 @@ function bindResultActions() {
     const advisor = getAdvisor(activeReading?.input?.advisorId);
     const text = `${advisor ? `${advisor.name}の鑑定\n` : ''}${readingToShareText(activeReading)}`;
     try {
-      if (navigator.share) await navigator.share({ title:'ORBITA 選択の星図', text });
+      if (navigator.share) await navigator.share({ title:'ORBITA 鑑定結果',text });
       else { await navigator.clipboard.writeText(text); showToast('結果をコピーしました'); }
     } catch { /* cancelled */ }
   });
   $('#download-result')?.addEventListener('click',() => {
     const blob = new Blob([JSON.stringify(activeReading,null,2)],{ type:'application/json' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url; link.download = `${activeReading.readingId}.json`; link.click(); URL.revokeObjectURL(url);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${activeReading.readingId}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   });
   $('#print-result')?.addEventListener('click',() => window.print());
   $('#deep-reading-button')?.addEventListener('click',createPaidCheckout);
@@ -399,11 +766,11 @@ function readPendingSession() {
 }
 
 function sessionStage(elapsedSeconds) {
-  if (elapsedSeconds < 35) return { index:1, title:'相談内容を静かに読み解いています', detail:'言葉の繰り返しと、二つの選択肢の違いを確認しています。' };
-  if (elapsedSeconds < 85) return { index:2, title:'占術の配置を整えています', detail:'選択した占術と生年月日の基調を重ねています。' };
-  if (elapsedSeconds < 135) return { index:3, title:'象徴と時期を照合しています', detail:'三枚の象徴札と、今動ける大きさを確かめています。' };
-  if (elapsedSeconds < 170) return { index:4, title:'鑑定文をまとめています', detail:'断定を避けながら、行動へつながる言葉へ整えています。' };
-  return { index:5, title:'最終確認をしています', detail:'矛盾や危険な表現がないか確認しています。' };
+  if (elapsedSeconds < 35) return { index:1,title:'相談内容を整理しています',detail:'悩みと二つの選択肢を読み分けています。' };
+  if (elapsedSeconds < 85) return { index:2,title:'AとBを比べています',detail:'それぞれの良い点、心配な点、試しやすさを比べています。' };
+  if (elapsedSeconds < 135) return { index:3,title:'占いの結果を重ねています',detail:'生年月日と選んだ占い方法を組み合わせています。' };
+  if (elapsedSeconds < 170) return { index:4,title:'次にできる行動をまとめています',detail:'大きな決断ではなく、まず試せる行動に整理しています。' };
+  return { index:5,title:'文章を読みやすく整えています',detail:'分かりにくい表現や矛盾がないか確認しています。' };
 }
 
 function formatCountdown(milliseconds) {
@@ -434,11 +801,11 @@ function renderSession() {
     const remaining = waiting ? starts - now : ready - now;
     root.innerHTML = `
       <div class="session-oracle">
-        <div class="session-portrait"><img src="${escapeHTML(advisor ? advisorImage(advisor) : '')}" alt="" width="360" height="480"><span class="live-badge"><i></i>${waiting ? '予約済み' : '占い中'}</span></div>
-        <div class="session-content"><p class="eyebrow">${waiting ? 'WAITING FOR YOUR SLOT' : 'READING IN PROGRESS'}</p><h1>${waiting ? `${escapeHTML(formatDateTimeJst(pending.booking.startAt))}から鑑定開始` : `${escapeHTML(advisor?.name || '鑑定者')}が星図を整えています`}</h1><p>${waiting ? 'この画面を閉じても、同じ端末で再度開けば続きから確認できます。' : escapeHTML(stage.detail)}</p><div class="session-countdown"><strong>${formatCountdown(remaining)}</strong><small>${waiting ? '鑑定開始まで' : '結果表示までの目安'}</small></div>
+        <div class="session-portrait"><img src="${escapeHTML(advisor ? advisorImage(advisor) : '')}" alt="" width="360" height="480"><span class="live-badge"><i></i>${waiting ? '予約済み' : '鑑定中'}</span></div>
+        <div class="session-content"><p class="eyebrow">${waiting ? 'WAITING' : 'READING IN PROGRESS'}</p><h1>${waiting ? `${escapeHTML(formatDateTimeJst(pending.booking.startAt))}から開始します` : `${escapeHTML(advisor?.name || '鑑定パートナー')}が結果をまとめています`}</h1><p>${waiting ? 'この画面を閉じても、同じ端末で再度開けば続きから確認できます。' : escapeHTML(stage.detail)}</p><div class="session-countdown"><strong>${formatCountdown(remaining)}</strong><small>${waiting ? '開始まで' : '結果表示までの目安'}</small></div>
           <div class="reading-stages">${[1,2,3,4,5].map((index) => `<span class="${!waiting && index <= stage.index ? 'active' : ''}">${index}</span>`).join('')}</div>
-          <h2>${waiting ? '予約枠を確保しました' : escapeHTML(stage.title)}</h2>
-          <p class="fiction-note">実在人物がリアルタイムで操作している表示ではなく、選択したAI鑑定人格が結果を構成する待機演出です。</p>
+          <h2>${waiting ? '予約時間までお待ちください' : escapeHTML(stage.title)}</h2>
+          <p class="session-note">会話内容と選んだ占い方法をもとに、結果を順番に整理しています。</p>
         </div>
       </div>`;
   };
@@ -447,92 +814,35 @@ function renderSession() {
   routeTo('session');
 }
 
-async function submitReservation(form) {
-  const errors = [];
-  if (!form.elements.adult.checked) errors.push('18歳以上であることと注意事項への同意が必要です。');
-  const input = formDataToInput(form);
-  if (input.birthdate && ageOnDate(input.birthdate) < 18) errors.push('本サービスは18歳以上の方を対象としています。');
-  if (!selectedAdvisorId || !selectedSlot) errors.push('鑑定者と予約日時を選択してください。');
-  const result = generateReading(input);
-  if (result.errors) errors.push(...result.errors);
-  if (result.safety?.level === 'stop') { showErrors([result.safety.message]); return; }
-  showErrors([...new Set(errors)]);
-  if (errors.length || !result.ok) return;
-
-  const submitButton = $('.submit-button',form);
-  submitButton.disabled = true;
-  submitButton.querySelector('span').textContent = '予約枠を確保しています';
-  try {
-    const booking = await reserveBooking({ advisorId:selectedAdvisorId, startAt:selectedSlot.startAt, readyAt:selectedSlot.readyAt });
-    result.booking = { bookingId:booking.bookingId, startAt:booking.startAt, readyAt:booking.readyAt };
-    localStorage.setItem(PENDING_KEY,JSON.stringify({ booking, reading:result, saveHistory:form.elements.saveHistory.checked }));
-    showToast('予約を確定しました');
-    renderSession();
-  } catch (error) {
-    if (String(error.message).includes('slot_taken')) {
-      showErrors(['直前に同じ予約枠が埋まりました。別の日時を選択してください。']);
-      openBookingModal(selectedAdvisorId);
-    } else showErrors(['予約処理に失敗しました。通信状態を確認して再度お試しください。']);
-  } finally {
-    submitButton.disabled = false;
-    submitButton.querySelector('span').textContent = 'この内容で予約を確定';
-    refreshStatuses();
-  }
-}
-
 function renderHistory() {
   const root = $('#history-root');
   const items = getHistory();
-  if (!items.length) root.innerHTML = '<div class="history-empty"><p>保存された鑑定はありません。</p><a class="button primary" href="#advisors" data-route="advisors">鑑定者を選ぶ</a></div>';
-  else root.innerHTML = `<div class="history-toolbar"><button class="mini-button danger-button" id="clear-history" type="button">すべて削除</button></div><div class="history-list">${items.map((reading) => { const advisor = getAdvisor(reading.input.advisorId); return `<article class="history-item"><div><h2>${escapeHTML(reading.input.optionA)} / ${escapeHTML(reading.input.optionB)}</h2><p>${advisor ? `${escapeHTML(advisor.name)}・` : ''}${escapeHTML(reading.readingId)}・${escapeHTML(reading.decision.text)}</p></div><div class="history-item-actions"><button class="mini-button" data-open-reading="${escapeHTML(reading.readingId)}" type="button">開く</button><button class="mini-button danger-button" data-delete-reading="${escapeHTML(reading.readingId)}" type="button">削除</button></div></article>`; }).join('')}</div>`;
+  if (!items.length) root.innerHTML = '<div class="history-empty"><p>保存した鑑定はありません。</p><a class="button primary" href="#advisors" data-route="advisors">相談相手を選ぶ</a></div>';
+  else root.innerHTML = `<div class="history-toolbar"><button class="mini-button danger-button" id="clear-history" type="button">すべて削除</button></div><div class="history-list">${items.map((reading) => { const advisor = getAdvisor(reading.input.advisorId); return `<article class="history-item"><div><h2>${escapeHTML(reading.input.optionA)} / ${escapeHTML(reading.input.optionB)}</h2><p>${advisor ? `${escapeHTML(advisor.name)}・` : ''}${escapeHTML(reading.decision.text)}</p></div><div class="history-item-actions"><button class="mini-button" data-open-reading="${escapeHTML(reading.readingId)}" type="button">開く</button><button class="mini-button danger-button" data-delete-reading="${escapeHTML(reading.readingId)}" type="button">削除</button></div></article>`; }).join('')}</div>`;
   $('#clear-history')?.addEventListener('click',clearHistory);
   $$('[data-open-reading]',root).forEach((button) => button.addEventListener('click',() => { const reading = getHistory().find((item) => item.readingId === button.dataset.openReading); if (reading) renderResult(reading); }));
   $$('[data-delete-reading]',root).forEach((button) => button.addEventListener('click',() => deleteReading(button.dataset.deleteReading)));
   $$('[data-route]',root).forEach((link) => link.addEventListener('click',(event) => { event.preventDefault(); routeTo(link.dataset.route); }));
 }
 
-function updateFormProgress() {
-  const form = $('#reading-form');
-  if (!form) return;
-  const fields = ['advisorId','slotStart','nickname','birthdate','question','optionA','optionB'];
-  const complete = fields.filter((name) => String(form.elements[name]?.value || '').trim()).length;
-  const consent = form.elements.adult.checked ? 1 : 0;
-  $('#progress-bar').style.width = `${10 + ((complete + consent) / 8) * 90}%`;
-}
-
-function fillSample() {
-  routeTo('advisors');
-  showToast('鑑定者と空き枠を選んだ後、見本内容を入力できます');
-  sessionStorage.setItem('orbita_fill_sample_after_selection','1');
-}
-
-function maybeFillSampleForm() {
-  if (sessionStorage.getItem('orbita_fill_sample_after_selection') !== '1' || !selectedAdvisorId || !selectedSlot) return;
-  sessionStorage.removeItem('orbita_fill_sample_after_selection');
-  const form = $('#reading-form');
-  form.elements.nickname.value = 'ミナ'; form.elements.birthdate.value = '1990-01-23'; form.elements.category.value = 'work';
-  form.elements.question.value = '現在の仕事を続けるか、新しい環境へ移るか迷っています。';
-  form.elements.optionA.value = '現在の仕事を続ける'; form.elements.optionB.value = '新しい仕事へ移る';
-  form.elements.timeframe.value = '3months'; form.elements.tension.value = '7'; form.elements.adult.checked = true;
-  $('#tension-output').value = '7'; $('[data-count-for="question"]').textContent = String(form.elements.question.value.length);
-  updateFormProgress(); showToast('見本データを入力しました');
+function showHowItWorks() {
+  routeTo('about');
+  showToast('4つの手順で利用できます');
 }
 
 function bindGlobalEvents() {
   $$('[data-route]').forEach((link) => link.addEventListener('click',(event) => { event.preventDefault(); routeTo(link.dataset.route); }));
-  $('.menu-toggle')?.addEventListener('click',() => { const nav = $('.site-nav'); const open = nav.classList.toggle('open'); $('.menu-toggle').setAttribute('aria-expanded',String(open)); });
-  $('#sample-reading')?.addEventListener('click',fillSample);
-  $('#change-reservation')?.addEventListener('click',() => selectedAdvisorId ? openBookingModal(selectedAdvisorId) : routeTo('advisors'));
+  $('.menu-toggle')?.addEventListener('click',() => {
+    const nav = $('.site-nav');
+    const open = nav.classList.toggle('open');
+    $('.menu-toggle').setAttribute('aria-expanded',String(open));
+  });
+  $('#sample-reading')?.addEventListener('click',showHowItWorks);
   $$('.filter-chip').forEach((chip) => chip.addEventListener('click',() => { activeFilter = chip.dataset.advisorFilter; renderAdvisorPage(); }));
   $('#advisor-genre-filter')?.addEventListener('change',(event) => { activeGenreFilter = event.target.value; renderAdvisorPage(); });
   $('#advisor-sort')?.addEventListener('change',(event) => { advisorSort = event.target.value; renderAdvisorPage(); });
-  const form = $('#reading-form');
-  form?.addEventListener('input',(event) => {
-    if (event.target.name === 'tension') $('#tension-output').value = event.target.value;
-    if (event.target.name === 'question') $('[data-count-for="question"]').textContent = String(event.target.value.length);
-    updateFormProgress();
-  });
-  form?.addEventListener('submit',(event) => { event.preventDefault(); submitReservation(form); });
+  $('#chat-back')?.addEventListener('click',backChat);
+  $('#chat-reset')?.addEventListener('click',resetChat);
   window.addEventListener('hashchange',() => routeTo(location.hash.replace('#','') || 'home',false));
   window.addEventListener('beforeinstallprompt',(event) => { event.preventDefault(); deferredInstallPrompt = event; const install = $('#install-app'); if (install) install.hidden = false; });
   $('#install-app')?.addEventListener('click',async () => { if (!deferredInstallPrompt) return; deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt = null; $('#install-app').hidden = true; });
@@ -549,24 +859,30 @@ async function handleCheckoutReturn() {
     const data = await response.json();
     const pending = JSON.parse(sessionStorage.getItem(PAID_PENDING_KEY) || 'null');
     if (!data.paid || !pending || data.readingId !== pending.readingId) throw new Error('reading_mismatch');
-    const deepResponse = await fetch(`${APP_CONFIG.apiBaseUrl}/api/deep-reading`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ sessionId, reading:pending }) });
+    const deepResponse = await fetch(`${APP_CONFIG.apiBaseUrl}/api/deep-reading`,{ method:'POST',headers:{ 'Content-Type':'application/json' },body:JSON.stringify({ sessionId,reading:pending }) });
     if (!deepResponse.ok) throw new Error('deep_reading_failed');
-    const deepData = await deepResponse.json(); pending.deep = deepData.deep; pending.deep.createdAt = new Date().toISOString(); renderResult(pending); sessionStorage.removeItem(PAID_PENDING_KEY); showToast('深層鑑定を生成しました');
-  } catch { showToast('決済確認に失敗しました。運営者へお問い合わせください'); }
+    const deepData = await deepResponse.json();
+    pending.deep = deepData.deep;
+    pending.deep.createdAt = new Date().toISOString();
+    renderResult(pending);
+    sessionStorage.removeItem(PAID_PENDING_KEY);
+    showToast('詳しい鑑定を表示しました');
+  } catch { showToast('決済の確認に失敗しました。運営者へお問い合わせください'); }
   finally { history.replaceState(null,'',`${location.pathname}#result`); }
 }
 
 async function init() {
-  const birthInput = $('#reading-form input[name="birthdate"]');
-  if (birthInput) { const max = new Date(); max.setFullYear(max.getFullYear() - 18); birthInput.max = localISODate(max); birthInput.min = '1900-01-01'; }
   restoreSelection();
+  chatState = loadChatState();
   bindGlobalEvents();
   await refreshStatuses();
-  updateFormProgress();
   const pending = readPendingSession();
   if (pending) renderSession();
-  else routeTo(location.hash.replace('#','') || 'home',false);
-  prepareReadingView(); maybeFillSampleForm();
+  else {
+    const route = location.hash.replace('#','') || 'home';
+    if (route === 'chat' && (!selectedAdvisorId || !selectedSlot)) routeTo('advisors',false);
+    else routeTo(route,false);
+  }
   handleCheckoutReturn();
   statusTimer = setInterval(refreshStatuses,30000);
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
