@@ -1,4 +1,4 @@
-const CACHE = 'orbita-v3.0.0';
+const CACHE = 'orbita-v3.0.1';
 const ASSETS = [
   './','./index.html','./styles.css','./app.js','./engine.js','./config.js','./advisors.js','./booking-core.js','./booking-service.js','./manifest.webmanifest',
   './privacy.html','./terms.html','./commerce.html','./assets/icons/icon-192.png','./assets/icons/icon-512.png',
