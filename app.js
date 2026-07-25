@@ -4,6 +4,9 @@ import { BOOKING_CONFIG, formatDateLabel, formatDateTimeJst, toJstParts } from '
 import { bookingDates, getAvailability, getStatuses, reserveBooking } from './booking-service.js';
 import { generateReading, readingToShareText } from './engine.js';
 
+const ASSET_VERSION = '3.0.3';
+const advisorImage = (advisor) => `${advisor.image}?v=${ASSET_VERSION}`;
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const HISTORY_KEY = 'orbita_readings_v2';
@@ -111,7 +114,7 @@ function advisorCardHTML(advisor, compact = false) {
   return `
     <article class="advisor-card ${compact ? 'compact' : ''}" data-advisor-card="${escapeHTML(advisor.id)}">
       <div class="advisor-image-wrap">
-        <img src="${escapeHTML(advisor.image)}" alt="${escapeHTML(advisor.name)}のイメージ" loading="lazy" width="900" height="600">
+        <img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}のイメージ" loading="lazy" width="900" height="600">
         <div class="advisor-image-copy">
           <h3>${escapeHTML(advisor.name)}</h3>
           <div class="advisor-meta"><span>${advisor.age}歳</span><span>${escapeHTML(advisor.gender)}</span><span>${escapeHTML(advisor.nationality)}</span></div>
@@ -222,7 +225,7 @@ function openBookingModal(advisorId) {
     <section class="booking-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-title">
       <button class="modal-close" type="button" aria-label="閉じる" data-close-modal>×</button>
       <div class="booking-advisor-head">
-        <img src="${escapeHTML(advisor.image)}" alt="" width="180" height="240">
+        <img src="${escapeHTML(advisorImage(advisor))}" alt="" width="180" height="240">
         <div>${statusBadge(statusFor(advisor.id))}<p class="eyebrow">RESERVATION</p><h2 id="booking-title">${escapeHTML(advisor.name)}</h2><p>${escapeHTML(advisor.tagline)}</p><small>${escapeHTML(scheduleSummary(advisor))}</small></div>
       </div>
       <div class="date-tabs">${dates.map((dateKey,index) => `<button class="date-tab ${index === 0 ? 'active' : ''}" type="button" data-booking-date="${dateKey}">${escapeHTML(formatDateLabel(dateKey))}</button>`).join('')}</div>
@@ -268,7 +271,7 @@ function prepareReadingView() {
     return;
   }
   const status = statusFor(advisor.id);
-  card.innerHTML = `<img src="${escapeHTML(advisor.image)}" alt="" width="120" height="160"><div>${statusBadge(status)}<h3>${escapeHTML(advisor.name)}</h3><p>${escapeHTML(advisor.type)}・${advisor.age}歳・${escapeHTML(advisor.nationality)}</p><small>${escapeHTML(advisor.tagline)}</small></div>`;
+  card.innerHTML = `<img src="${escapeHTML(advisorImage(advisor))}" alt="" width="120" height="160"><div>${statusBadge(status)}<h3>${escapeHTML(advisor.name)}</h3><p>${escapeHTML(advisor.type)}・${advisor.age}歳・${escapeHTML(advisor.nationality)}</p><small>${escapeHTML(advisor.tagline)}</small></div>`;
   form.elements.advisorId.value = advisor.id;
   form.elements.slotStart.value = selectedSlot.startAt;
   $('#selected-slot-label').textContent = formatDateTimeJst(selectedSlot.startAt);
@@ -321,7 +324,7 @@ function renderResult(reading) {
   const caution = reading.safety.level === 'caution' ? `<div class="result-warning"><strong>${escapeHTML(reading.safety.title)}</strong><br>${escapeHTML(reading.safety.message)}</div>` : '';
   root.innerHTML = `
     <div class="result-oracle-head">
-      ${advisor ? `<img src="${escapeHTML(advisor.image)}" alt="${escapeHTML(advisor.name)}のイメージ" width="180" height="240">` : ''}
+      ${advisor ? `<img src="${escapeHTML(advisorImage(advisor))}" alt="${escapeHTML(advisor.name)}のイメージ" width="180" height="240">` : ''}
       <div><div class="reading-id">${escapeHTML(reading.readingId)}</div><p class="eyebrow">YOUR RESERVED ORBIT</p><h1>${escapeHTML(reading.nickname || reading.input.nickname)}さんの選択の星図</h1><p>${advisor ? `${escapeHTML(advisor.name)}・${escapeHTML(method.name)}による鑑定` : ''}</p><strong>${escapeHTML(reading.decision.text)}</strong></div>
     </div>
     ${caution}
@@ -431,7 +434,7 @@ function renderSession() {
     const remaining = waiting ? starts - now : ready - now;
     root.innerHTML = `
       <div class="session-oracle">
-        <div class="session-portrait"><img src="${escapeHTML(advisor?.image || '')}" alt="" width="360" height="480"><span class="live-badge"><i></i>${waiting ? '予約済み' : '占い中'}</span></div>
+        <div class="session-portrait"><img src="${escapeHTML(advisor ? advisorImage(advisor) : '')}" alt="" width="360" height="480"><span class="live-badge"><i></i>${waiting ? '予約済み' : '占い中'}</span></div>
         <div class="session-content"><p class="eyebrow">${waiting ? 'WAITING FOR YOUR SLOT' : 'READING IN PROGRESS'}</p><h1>${waiting ? `${escapeHTML(formatDateTimeJst(pending.booking.startAt))}から鑑定開始` : `${escapeHTML(advisor?.name || '鑑定者')}が星図を整えています`}</h1><p>${waiting ? 'この画面を閉じても、同じ端末で再度開けば続きから確認できます。' : escapeHTML(stage.detail)}</p><div class="session-countdown"><strong>${formatCountdown(remaining)}</strong><small>${waiting ? '鑑定開始まで' : '結果表示までの目安'}</small></div>
           <div class="reading-stages">${[1,2,3,4,5].map((index) => `<span class="${!waiting && index <= stage.index ? 'active' : ''}">${index}</span>`).join('')}</div>
           <h2>${waiting ? '予約枠を確保しました' : escapeHTML(stage.title)}</h2>

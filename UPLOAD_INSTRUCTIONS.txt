@@ -1,9 +1,15 @@
-ORBITA v3.0.2 リンク修正版
+ORBITA v3.0.3 鑑定者画像表示修正
 
-変更ファイル:
-- index.html
-- app.js
-- sw.js
+GitHubの gene10969/orbita-fortune で
+Add file → Upload files を開き、このフォルダ内の以下を同じ階層のままアップロードしてください。
 
-GitHubリポジトリ直下へ3ファイルを同じ階層のまま上書きしてください。
-公開反映後はサイトのタブを閉じ、再度開いて Ctrl+F5 を押してください。
+index.html
+app.js
+styles.css
+sw.js
+assets フォルダ
+
+同名ファイルは上書きします。
+コミット例：Fix ORBITA advisor portrait display
+
+反映後は公開ページのタブを閉じ、再度開いて Ctrl + F5 を押してください。
