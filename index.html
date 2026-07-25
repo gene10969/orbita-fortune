@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#080704">
-  <meta name="description" content="10名のAI鑑定人格から選び、シフト制の予約枠で受け取る約3分の自動鑑定。未来を断定せず、自分で選び直せる星図をつくります。">
+  <meta name="description" content="鑑定パートナーを選び、予約後のチャットで相談内容を伝えるデジタル占いサービス。迷いを整理し、次に試せる行動まで分かりやすくまとめます。">
   <meta name="robots" content="index,follow">
-  <meta property="og:title" content="ORBITA｜選択の星図">
-  <meta property="og:description" content="10名の鑑定者から選べる予約制の選択鑑定。数秘・象徴札・7日間の行動実験を組み合わせます。">
+  <meta property="og:title" content="ORBITA｜会話しながら迷いを整理する占い">
+  <meta property="og:description" content="鑑定パートナーを選び、チャットで相談。二つの選択肢と次の一歩を分かりやすく整理します。">
   <meta property="og:type" content="website">
-  <title>ORBITA｜10名から選べる予約制AI占い</title>
+  <title>ORBITA｜チャットで相談できる予約制占い</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=3.0.3">
+  <link rel="stylesheet" href="styles.css?v=3.1.0">
+  <link rel="stylesheet" href="chat.css?v=3.1.0">
 </head>
 <body>
   <div class="ambient" aria-hidden="true">
@@ -29,7 +30,7 @@
     </a>
     <nav id="site-nav" class="site-nav" aria-label="メインナビゲーション">
       <a href="#home" data-route="home">ホーム</a>
-      <a href="#advisors" data-route="advisors">鑑定者</a>
+      <a href="#advisors" data-route="advisors">鑑定パートナー</a>
       <a href="#about" data-route="about">ご利用の流れ</a>
       <a href="commerce.html">料金案内</a>
       <a href="#history" data-route="history">鑑定履歴</a>
@@ -37,7 +38,7 @@
     </nav>
     <div class="header-actions">
       <a class="header-action ghost" href="#history" data-route="history">履歴</a>
-      <a class="header-action primary" href="#advisors" data-route="advisors">予約する</a>
+      <a class="header-action primary" href="#advisors" data-route="advisors">相談する</a>
     </div>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="メニューを開く"><span></span><span></span></button>
     <button id="install-app" class="install-app" type="button" hidden>アプリを追加</button>
@@ -47,15 +48,15 @@
     <section id="view-home" class="view active" data-view="home">
       <div class="hero shell">
         <div class="hero-copy reveal">
-          <p class="eyebrow">DECISION ORACLE / PRIVATE BY DESIGN</p>
-          <h1>答えを当てるのではなく、<br><em>選び直せる未来</em>をつくる。</h1>
-          <p class="hero-lead">二つの選択肢を、数の基調・三枚の象徴札・可逆性・後悔回避の視点で読み解きます。未来や相手の意思を断定せず、次の7日間に試せる小さな行動まで自動で整えます。</p>
+          <p class="eyebrow">PRIVATE CHAT READING</p>
+          <h1>迷っていることを、<br><em>会話しながら整理する。</em></h1>
+          <p class="hero-lead">鑑定パートナーと空いている時間を選び、予約後のチャットで相談内容を順番に伝えるだけです。二つの選択肢を比べ、今できる小さな一歩まで分かりやすくまとめます。</p>
           <div class="hero-actions">
-            <a class="button primary" href="#advisors" data-route="advisors">鑑定者を選んで予約</a>
-            <button class="button ghost" id="sample-reading" type="button">見本を見る</button>
+            <a class="button primary" href="#advisors" data-route="advisors">鑑定パートナーを選ぶ</a>
+            <button class="button ghost" id="sample-reading" type="button">使い方を見る</button>
           </div>
           <ul class="trust-list" aria-label="特徴">
-            <li>10名から選択</li><li>曜日・時間別の予約制</li><li>約3分で鑑定</li>
+            <li>10名から選べる</li><li>チャットで相談</li><li>約3分で結果表示</li>
           </ul>
         </div>
         <div class="hero-oracle reveal delay-1" aria-hidden="true">
@@ -68,51 +69,48 @@
         </div>
       </div>
 
-      <section class="feature-section shell">
-        <p class="section-kicker">ONE READING, FIVE LAYERS</p>
-        <h2>占いと意思決定支援の間にある、独自の鑑定構造。</h2>
-        <div class="feature-grid">
-          <article class="feature-card"><span>01</span><h3>数の基調</h3><p>生年月日から、長期的な判断傾向と当日の巡りを算出します。</p></article>
-          <article class="feature-card"><span>02</span><h3>三枚の象徴札</h3><p>現在・見落とし・次の一歩を、ORBITA独自の24札から再現可能な方法で抽出します。</p></article>
-          <article class="feature-card"><span>03</span><h3>二択共鳴度</h3><p>成功率ではなく、今の自分が小さく試しやすい方向を比較します。</p></article>
-          <article class="feature-card"><span>04</span><h3>可逆性指数</h3><p>失敗しても戻れる余地を数値化し、先に撤退条件を考えます。</p></article>
-          <article class="feature-card"><span>05</span><h3>7日間の実験</h3><p>結論を急がず、現実の反応から次の判断材料を集めます。</p></article>
+      <section class="feature-section shell simple-feature-section">
+        <p class="section-kicker">THREE SIMPLE STEPS</p>
+        <h2>難しい操作はありません。</h2>
+        <div class="feature-grid simple-feature-grid">
+          <article class="feature-card"><span>01</span><h3>相手を選ぶ</h3><p>話し方や得意分野を見て、相談しやすい鑑定パートナーを選びます。</p></article>
+          <article class="feature-card"><span>02</span><h3>チャットで話す</h3><p>質問に沿って、悩み・二つの選択肢・考えたい期間を順番に伝えます。</p></article>
+          <article class="feature-card"><span>03</span><h3>結果を受け取る</h3><p>AとBの違い、気をつけたい点、7日間で試せる行動を受け取ります。</p></article>
         </div>
       </section>
 
       <section class="advisor-preview-section shell">
         <div class="section-heading-row">
-          <div><p class="section-kicker">TEN ORACLE PERSONAS</p><h2>いま相談できる鑑定者</h2></div>
-          <a class="text-link" href="#advisors" data-route="advisors">全10名とシフトを見る →</a>
+          <div><p class="section-kicker">TEN READING PARTNERS</p><h2>相談相手を選ぶ</h2></div>
+          <a class="text-link" href="#advisors" data-route="advisors">全10名を見る →</a>
         </div>
         <div id="home-advisor-grid" class="advisor-preview-grid" aria-live="polite"></div>
-        <p class="fiction-note">掲載人物はORBITA独自のAI鑑定人格とイメージです。実在する占い師・タレントではありません。</p>
       </section>
 
       <section class="philosophy shell">
         <div class="quote-mark">“</div>
-        <blockquote>占いの役割は、人生を決めることではない。<br>自分の選択を、自分の手に戻すこと。</blockquote>
+        <blockquote>正解を決めつけるのではなく、<br>自分で選べる状態をつくる。</blockquote>
       </section>
     </section>
 
     <section id="view-advisors" class="view advisor-directory-view" data-view="advisors">
       <div class="page-head advisor-directory-head shell">
-        <p class="eyebrow">ORBITA ADVISORS</p>
-        <h1><span>鑑定者一覧</span></h1>
-        <p>あなたの悩みや目的に合わせて、最適な鑑定者をお選びいただけます。</p>
+        <p class="eyebrow">READING PARTNERS</p>
+        <h1><span>鑑定パートナーを選ぶ</span></h1>
+        <p>話し方や得意分野を見て、今の相談に合う相手を選んでください。</p>
       </div>
       <div class="shell advisor-page-tools">
         <div class="advisor-toolbar">
-          <div class="advisor-filters" role="group" aria-label="鑑定者の絞り込み">
+          <div class="advisor-filters" role="group" aria-label="鑑定パートナーの絞り込み">
             <button class="filter-chip active" type="button" data-advisor-filter="all">すべて</button>
             <button class="filter-chip" type="button" data-advisor-filter="available">受付中のみ</button>
             <button class="filter-chip" type="button" data-advisor-filter="女性">女性</button>
             <button class="filter-chip" type="button" data-advisor-filter="男性">男性</button>
           </div>
           <label class="advisor-select-control">
-            <span class="visually-hidden">ジャンルで探す</span>
-            <select id="advisor-genre-filter" aria-label="ジャンルで探す">
-              <option value="all">ジャンルで探す</option>
+            <span class="visually-hidden">相談内容で探す</span>
+            <select id="advisor-genre-filter" aria-label="相談内容で探す">
+              <option value="all">相談内容で探す</option>
               <option value="love">恋愛</option>
               <option value="work">仕事・転職</option>
               <option value="relationship">人間関係</option>
@@ -131,88 +129,37 @@
           </label>
         </div>
         <div id="advisor-grid" class="advisor-grid" aria-live="polite"></div>
-        <p class="advisor-shift-note">※鑑定者のスケジュールは変更される場合があります。最新の空き状況は予約画面でご確認ください。</p>
-        <p class="fiction-note">鑑定者名・プロフィール・写真はサービス内の演出として設計された架空のAI鑑定人格です。対面・通話による実在人物の鑑定ではありません。</p>
+        <p class="advisor-shift-note">受付時間は変更される場合があります。空いている日時は予約画面で確認できます。</p>
       </div>
     </section>
 
-    <section id="view-reading" class="view" data-view="reading">
-      <div class="page-head shell">
-        <p class="eyebrow">RESERVED READING</p>
-        <h1>予約内容と相談を入力する</h1>
-        <p>鑑定者・占術・予約枠を確定後、予約時刻から約3分かけて結果を整えます。結果は同じ端末で受け取れます。</p>
+    <section id="view-chat" class="view" data-view="chat">
+      <div class="page-head shell chat-page-head">
+        <p class="eyebrow">PRIVATE CONSULTATION CHAT</p>
+        <h1>チャットで相談する</h1>
+        <p>一度に全部書く必要はありません。表示される質問に順番に答えてください。</p>
       </div>
-
-      <div class="reading-layout shell">
-        <form id="reading-form" class="oracle-form" novalidate>
-          <input name="advisorId" type="hidden">
-          <input name="slotStart" type="hidden">
-          <div class="booking-selection">
-            <div class="form-section">
-              <div class="section-number">00</div>
-              <div><h2>鑑定者・占術・予約日時</h2><p>変更する場合は「選び直す」から予約画面へ戻れます。</p></div>
-            </div>
-            <div id="selected-advisor-card" class="selected-advisor-card"></div>
-            <div class="field-grid two">
-              <label class="field"><span>占術</span><select name="method" id="method-select"></select></label>
-              <div class="field appointment-field"><span>予約日時</span><strong id="selected-slot-label">未選択</strong><button class="mini-button" id="change-reservation" type="button">選び直す</button></div>
-            </div>
+      <div class="chat-layout shell">
+        <section class="chat-panel" aria-labelledby="chat-title">
+          <div id="chat-advisor-head" class="chat-advisor-head"></div>
+          <div class="chat-progress" aria-label="入力の進み具合"><span id="chat-progress-bar"></span></div>
+          <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+          <div id="chat-controls" class="chat-controls"></div>
+          <div class="chat-footer-actions">
+            <button id="chat-back" class="mini-button" type="button">一つ前に戻る</button>
+            <button id="chat-reset" class="mini-button danger-button" type="button">最初からやり直す</button>
           </div>
-          <div class="form-progress" aria-label="入力進捗"><span id="progress-bar"></span></div>
-          <div class="form-section">
-            <div class="section-number">01</div>
-            <div><h2>あなたの基調</h2><p>本名は不要です。鑑定内で呼ばれたい名前を入力してください。</p></div>
-          </div>
-          <div class="field-grid two">
-            <label class="field"><span>呼び名</span><input name="nickname" type="text" maxlength="40" autocomplete="nickname" placeholder="例：ミナ" required></label>
-            <label class="field"><span>生年月日</span><input name="birthdate" type="date" required></label>
-          </div>
-
-          <div class="form-section">
-            <div class="section-number">02</div>
-            <div><h2>迷いの輪郭</h2><p>具体的に書くほど、7日間の行動案が現実に近づきます。</p></div>
-          </div>
-          <label class="field"><span>分野</span>
-            <select name="category">
-              <option value="work">仕事・転職</option><option value="love">恋愛</option><option value="relationship">人間関係</option><option value="money">お金・事業</option><option value="life">生き方・環境</option><option value="other">その他</option>
-            </select>
-          </label>
-          <label class="field"><span>いま迷っていること</span><textarea name="question" maxlength="300" rows="4" placeholder="例：現在の仕事を続けるか、新しい環境へ移るか迷っています。" required></textarea><small><b data-count-for="question">0</b>/300</small></label>
-          <div class="choice-grid">
-            <label class="choice-field choice-a"><span><i>A</i>選択肢A</span><input name="optionA" type="text" maxlength="80" placeholder="例：現在の仕事を続ける" required></label>
-            <div class="choice-divider">OR</div>
-            <label class="choice-field choice-b"><span><i>B</i>選択肢B</span><input name="optionB" type="text" maxlength="80" placeholder="例：新しい仕事へ移る" required></label>
-          </div>
-
-          <div class="form-section">
-            <div class="section-number">03</div>
-            <div><h2>今の状態</h2><p>迷いの強さは結果の良し悪しではなく、行動の大きさを調整するために使います。</p></div>
-          </div>
-          <div class="field-grid two">
-            <label class="field"><span>考えたい期間</span><select name="timeframe"><option value="7days">7日以内</option><option value="1month" selected>1か月以内</option><option value="3months">3か月以内</option><option value="1year">1年以内</option></select></label>
-            <label class="field range-field"><span>迷いの強さ <output id="tension-output">5</output>/10</span><input name="tension" type="range" min="0" max="10" value="5"></label>
-          </div>
-
-          <div id="form-errors" class="form-errors" role="alert" hidden></div>
-          <label class="consent"><input name="adult" type="checkbox" required><span>18歳以上であり、本鑑定が娯楽・自己理解の補助で、重要な判断の代替ではないことに同意します。</span></label>
-          <label class="consent"><input name="saveHistory" type="checkbox"><span>この端末に鑑定履歴を保存する（後からいつでも削除できます）</span></label>
-
-          <button class="button primary submit-button" type="submit"><span>この内容で予約を確定</span><small>予約時刻から約3分で鑑定結果</small></button>
-          <p class="privacy-note">相談内容は端末内で処理されます。共有予約サーバーには鑑定者ID・予約時刻・匿名の予約IDだけを送ります。</p>
-        </form>
-
-        <aside class="reading-aside">
-          <div class="aside-card"><span class="aside-icon">◈</span><h3>未来は断定しません</h3><p>相手の本心、寿命、病気の治癒、投資・賭け事の結果などは鑑定しません。</p></div>
-          <div class="aside-card"><span class="aside-icon">⌁</span><h3>鑑定ごとに変化</h3><p>鑑定者・占術・予約日時が星図へ反映されるため、同じ相談でも視点と象徴が変わります。</p></div>
-          <div class="aside-card"><span class="aside-icon">⚿</span><h3>履歴は任意</h3><p>保存を選ばない限り、ブラウザを閉じた後に鑑定内容は残りません。</p></div>
+        </section>
+        <aside class="chat-aside">
+          <div class="aside-card"><span class="aside-icon">◈</span><h3>会話形式で進みます</h3><p>呼び名、生年月日、相談内容、AとBの選択肢を一つずつ確認します。</p></div>
+          <div class="aside-card"><span class="aside-icon">⌁</span><h3>大切なこと</h3><p>未来や相手の気持ちを断定せず、判断材料と次に試す行動を整理します。</p></div>
+          <div class="aside-card"><span class="aside-icon">⚿</span><h3>保存は選べます</h3><p>履歴を残すかどうかは、予約確定前に選択できます。</p></div>
         </aside>
       </div>
     </section>
 
     <section id="view-session" class="view" data-view="session">
-      <div class="session-shell shell">
-        <div id="session-root"></div>
-      </div>
+      <div class="session-shell shell"><div id="session-root"></div></div>
     </section>
 
     <section id="view-result" class="view" data-view="result">
@@ -220,16 +167,18 @@
     </section>
 
     <section id="view-history" class="view" data-view="history">
-      <div class="page-head shell"><p class="eyebrow">LOCAL ARCHIVE</p><h1>この端末の鑑定履歴</h1><p>履歴はブラウザ内だけに保存されます。別の端末とは同期されません。</p></div>
+      <div class="page-head shell"><p class="eyebrow">SAVED READINGS</p><h1>この端末の鑑定履歴</h1><p>保存を選んだ鑑定だけが表示されます。別の端末とは共有されません。</p></div>
       <div class="shell"><div id="history-root" class="history-root"></div></div>
     </section>
 
     <section id="view-about" class="view" data-view="about">
-      <div class="page-head shell"><p class="eyebrow">PHILOSOPHY & SAFETY</p><h1>この星図について</h1><p>ORBITAは、占いの象徴性と意思決定の整理法を組み合わせた内省ツールです。</p></div>
+      <div class="page-head shell"><p class="eyebrow">HOW IT WORKS</p><h1>ご利用の流れ</h1><p>予約から結果表示まで、画面の案内に沿って進められます。</p></div>
       <div class="article-shell shell">
-        <article class="prose-card"><h2>当てるためではなく、動ける大きさへ分解する</h2><p>迷いが苦しいのは、答えが分からないからだけではありません。一度に人生全体を決めようとすると、失敗への恐れが大きくなります。ORBITAは「どちらが絶対に正しいか」ではなく、「どちらをどの大きさで試せるか」を示します。</p></article>
-        <article class="prose-card"><h2>結果の仕組み</h2><p>生年月日の数的計算、相談内容、二つの選択肢、迷いの強さに加え、選択した鑑定者・占術・予約日時を組み合わせ、独自の24枚の象徴札と指標を生成します。鑑定者や予約枠を変えると異なる視点と結果になります。</p></article>
-        <article class="prose-card warning"><h2>扱わない内容</h2><p>生命・自傷・危害、病気の診断や治癒、妊娠の確定、法律判断、投資・賭け事の利益、相手の意思の断定は扱いません。緊急性がある場合は占いを使用せず、地域の緊急窓口や適切な専門家へ相談してください。</p></article>
+        <article class="prose-card"><h2>1. 鑑定パートナーを選ぶ</h2><p>話し方、得意分野、受付時間を見て、相談しやすい相手を選びます。</p></article>
+        <article class="prose-card"><h2>2. 空いている時間を予約する</h2><p>予約枠は10分単位です。空いている日時を選ぶと、チャット画面へ進みます。</p></article>
+        <article class="prose-card"><h2>3. チャットで相談内容を伝える</h2><p>質問に順番に答えるだけで、相談内容と二つの選択肢を整理できます。</p></article>
+        <article class="prose-card"><h2>4. 約3分後に結果を確認する</h2><p>AとBの比較、気をつけたい点、7日間でできる行動をまとめて表示します。</p></article>
+        <article class="prose-card warning"><h2>取り扱わない相談</h2><p>命や安全に関わる相談、病気の診断・治療、妊娠の確定、法律・税務・投資判断、賭け事の結果予測には利用できません。</p></article>
       </div>
     </section>
   </main>
@@ -239,9 +188,9 @@
   <footer class="site-footer">
     <div class="footer-brand"><span>◎</span><div><strong>ORBITA</strong><small>選択の星図</small></div></div>
     <nav aria-label="フッターナビゲーション"><a href="privacy.html">プライバシー</a><a href="terms.html">利用規約</a><a href="commerce.html">特定商取引法表記</a></nav>
-    <p>© 2026 ORBITA. 掲載鑑定者は架空のAI鑑定人格です。本サービスは娯楽・自己理解の補助を目的とします。</p>
+    <p>© 2026 ORBITA. 会話形式のデジタル鑑定サービスです。鑑定結果は娯楽・自己理解の補助としてご利用ください。</p>
   </footer>
 
-  <script type="module" src="app.js?v=3.0.3"></script>
+  <script type="module" src="app.js?v=3.1.0"></script>
 </body>
 </html>
