@@ -1,4 +1,4 @@
-const VERSION='4.0.0';
+const VERSION='4.1.0';
 
 export async function initOwnerTestV4(){
   if(!/\/owner-test\.html$/.test(location.pathname)) return;
@@ -17,6 +17,8 @@ export async function initOwnerTestV4(){
   }finally{
     window.MutationObserver=NativeMutationObserver;
   }
+
+  installTarotTitleController(NativeMutationObserver);
 }
 
 function createBatchedMutationObserver(NativeMutationObserver){
@@ -73,11 +75,9 @@ function injectWaitingStyles(){
   style.dataset.ownerWaitingV4='true';
   style.textContent=`
     #waiting-panel .estimate,
-    #waiting-panel .orb,
-    #waiting-panel .waiting-content,
-    #waiting-panel .waiting-dots{display:none!important}
+    #waiting-panel .orb{display:none!important}
 
-    #waiting-panel .progress{padding:72px 18px 78px}
+    #waiting-panel .progress{padding:54px 18px 68px}
     #waiting-panel .owner-waiting-mark{
       width:112px;height:112px;margin:0 auto 30px;border-radius:50%;
       position:relative;border:1px solid rgba(215,182,108,.52);
@@ -92,6 +92,15 @@ function injectWaitingStyles(){
     #waiting-panel .owner-waiting-mark span{position:relative;z-index:1}
     #waiting-panel #waiting-title{max-width:780px;margin:0 auto 14px;font-size:clamp(30px,5vw,50px)}
     #waiting-panel #waiting-detail{max-width:700px;margin:0 auto;color:#c5baa6;font-size:16px}
+    #waiting-panel .waiting-content{
+      display:block!important;
+      margin-top:30px;
+      min-height:150px;
+      border-color:rgba(215,182,108,.38);
+      background:linear-gradient(145deg,rgba(215,182,108,.08),rgba(10,8,5,.96))
+    }
+    #waiting-panel .waiting-content h3{font-size:21px}
+    #waiting-panel .waiting-dots{display:flex!important;margin-top:18px}
     @keyframes ownerWaitingSpin{to{transform:rotate(360deg)}}
   `;
   document.head.append(style);
@@ -103,15 +112,6 @@ function installWaitingController(){
   panel.dataset.ownerWaitingController='true';
 
   let active=false;
-  let fastForwardTimer=0;
-  let restoreTimer=0;
-  const realDateNow=Date.now.bind(Date);
-
-  const restoreDateNow=()=>{
-    if(Date.now!==realDateNow) Date.now=realDateNow;
-    window.clearTimeout(restoreTimer);
-    restoreTimer=0;
-  };
 
   const configureWaitingScreen=()=>{
     const progress=panel.querySelector('.progress');
@@ -127,16 +127,7 @@ function installWaitingController(){
     if(title) title.textContent='鑑定士があなたのために結果をまとめています';
 
     const detail=panel.querySelector('#waiting-detail');
-    if(detail) detail.textContent='相談内容と選んだ占い方法を丁寧に読み解いています。準備ができ次第、結果を表示します。';
-  };
-
-  const fastForwardInternalTimer=()=>{
-    window.clearTimeout(fastForwardTimer);
-    fastForwardTimer=window.setTimeout(()=>{
-      if(panel.classList.contains('hidden')) return;
-      Date.now=()=>realDateNow()+10*60*1000;
-      restoreTimer=window.setTimeout(restoreDateNow,800);
-    },900);
+    if(detail) detail.textContent='相談内容と選んだ占い方法を丁寧に読み解いています。待っている間は、下の内容をご覧ください。';
   };
 
   const update=()=>{
@@ -144,16 +135,69 @@ function installWaitingController(){
     if(visible&&!active){
       active=true;
       configureWaitingScreen();
-      fastForwardInternalTimer();
     }else if(!visible&&active){
       active=false;
-      window.clearTimeout(fastForwardTimer);
-      fastForwardTimer=0;
-      restoreDateNow();
     }
   };
 
   const observer=new MutationObserver(update);
   observer.observe(panel,{attributes:true,attributeFilter:['class']});
   update();
+}
+
+function installTarotTitleController(NativeMutationObserver){
+  const root=document.querySelector('#result-root');
+  if(!root||root.dataset.ownerTarotTitleController==='true') return;
+  root.dataset.ownerTarotTitleController='true';
+
+  let timer=0;
+  const schedule=()=>{
+    window.clearTimeout(timer);
+    timer=window.setTimeout(labelTarotCards,80);
+  };
+
+  const observer=new NativeMutationObserver(schedule);
+  observer.observe(root,{childList:true,subtree:true});
+  schedule();
+}
+
+function labelTarotCards(){
+  const namespace='http://www.w3.org/2000/svg';
+  const cards=[...document.querySelectorAll('#result-root .tarot-card')];
+
+  cards.forEach((card,index)=>{
+    const svg=card.querySelector('.owner-tarot-illustration svg');
+    if(!svg||svg.dataset.ownerCardName==='true') return;
+
+    const name=card.querySelector('h3')?.textContent?.trim()||`タロットカード${index+1}`;
+    const group=document.createElementNS(namespace,'g');
+    group.setAttribute('class','owner-tarot-nameplate');
+    group.setAttribute('aria-hidden','true');
+
+    const plate=document.createElementNS(namespace,'rect');
+    plate.setAttribute('x','88');
+    plate.setAttribute('y','48');
+    plate.setAttribute('width','424');
+    plate.setAttribute('height','54');
+    plate.setAttribute('rx','18');
+    plate.setAttribute('fill','#09070b');
+    plate.setAttribute('fill-opacity','.92');
+    plate.setAttribute('stroke','#d7b66c');
+    plate.setAttribute('stroke-width','2');
+
+    const text=document.createElementNS(namespace,'text');
+    text.setAttribute('x','300');
+    text.setAttribute('y','83');
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('fill','#f6e3aa');
+    text.setAttribute('font-family','Yu Mincho, Hiragino Mincho ProN, serif');
+    text.setAttribute('font-size',name.length>=8?'25':'29');
+    text.setAttribute('letter-spacing','2');
+    text.textContent=name;
+
+    group.append(plate,text);
+    svg.append(group);
+    svg.dataset.ownerCardName='true';
+    svg.setAttribute('aria-label',`${name}のタロットカードイラスト`);
+  });
 }
