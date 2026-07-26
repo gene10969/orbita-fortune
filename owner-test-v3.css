@@ -1,0 +1,36 @@
+/* ORBITA owner-test v3 enhancements */
+.owner-consent-row{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;
+  margin:22px 0!important;padding:16px 18px!important;border:1px solid rgba(215,182,108,.34)!important;
+  border-radius:14px!important;background:#090704!important;cursor:pointer!important;
+}
+.owner-consent-row span{display:block!important;margin:0!important;color:#e8dfcf!important;font-size:16px!important;line-height:1.7!important}
+.owner-consent-row input[type="checkbox"]{
+  appearance:auto!important;width:27px!important;height:27px!important;min-width:27px!important;flex:0 0 27px!important;
+  margin:0 0 0 auto!important;padding:0!important;accent-color:#d7b66c!important;cursor:pointer!important;
+}
+.owner-lucky-section{margin-top:46px}
+.owner-lucky-title{text-align:center;margin:0 0 18px;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:clamp(24px,3vw,32px);font-weight:500}
+.owner-lucky-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.owner-lucky-item{position:relative;overflow:hidden;border:1px solid rgba(215,182,108,.30);border-radius:16px;padding:18px;background:linear-gradient(145deg,#110d06,#070604)}
+.owner-lucky-item:after{content:"✦";position:absolute;right:13px;top:7px;color:rgba(242,221,160,.22);font-size:34px}
+.owner-lucky-item span{display:block;color:#aaa08d;font-size:12px;letter-spacing:.08em}
+.owner-lucky-item strong{display:block;margin-top:6px;color:#f2dda0;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:24px;line-height:1.35}
+.owner-lucky-item p{margin:7px 0 0;color:#c9bea9;font-size:13px;line-height:1.65}
+.tarot-card.owner-tarot-card{min-height:555px!important;padding:18px!important;background:linear-gradient(165deg,#171108,#070604 72%)!important}
+.owner-tarot-illustration{position:relative;height:286px;margin:16px 5px 18px;border:1px solid rgba(215,182,108,.38);border-radius:15px;overflow:hidden;background:#050405}
+.owner-tarot-illustration svg{display:block;width:100%;height:100%}
+.owner-tarot-card h3{font-size:22px!important}
+.owner-tarot-card p{font-size:14px!important;line-height:1.75!important}
+.owner-tarot-keyword{display:inline-flex;margin-top:8px;border:1px solid rgba(215,182,108,.35);border-radius:999px;padding:3px 10px;color:#d9c788;font-size:11px}
+.recommend.owner-assertive-result{border-color:rgba(240,217,153,.7)!important;background:linear-gradient(145deg,rgba(215,182,108,.17),rgba(12,9,5,.94))!important}
+.recommend.owner-assertive-result h2{font-size:clamp(25px,3.4vw,38px)!important}
+.choice-result.owner-selected-path{border-color:#f2dda0!important;box-shadow:0 0 0 2px rgba(215,182,108,.14)}
+@media(max-width:900px){.owner-lucky-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){
+  .owner-consent-row{align-items:flex-start!important;padding:15px!important}
+  .owner-consent-row span{font-size:15px!important}
+  .owner-consent-row input[type="checkbox"]{width:29px!important;height:29px!important;min-width:29px!important;flex-basis:29px!important}
+  .owner-lucky-grid{grid-template-columns:1fr}
+  .owner-tarot-illustration{height:330px}
+}
