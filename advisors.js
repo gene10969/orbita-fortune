@@ -1,6 +1,6 @@
 export const METHOD_CATALOG = Object.freeze({
-  decision: { id:'decision', name:'二択比較', short:'AとBを分かりやすく比べる', icon:'◎' },
-  tarot: { id:'tarot', name:'象徴カード', short:'3枚のカードから今の状況を読む', icon:'◇' },
+  decision: { id:'decision', name:'二つの道を比較', short:'今のまま進む道と別の方向へ進む道を比べる', icon:'◎' },
+  tarot: { id:'tarot', name:'タロットカード', short:'3枚のタロットカードから今の状況を読む', icon:'◇' },
   numerology: { id:'numerology', name:'数秘術', short:'生年月日の数字から考え方の傾向を見る', icon:'⌘' },
   astrology: { id:'astrology', name:'星読み', short:'動く時期と待つ時期を考える', icon:'☾' },
   oracle: { id:'oracle', name:'オラクル', short:'今必要な考え方と行動を整理する', icon:'✦' },
@@ -80,59 +80,8 @@ export function getMethod(id) {
   return METHOD_CATALOG[id] || METHOD_CATALOG.decision;
 }
 
-// 運営者テストページだけ、二つの入力欄を「未来の候補」ではなく
-// 「今のまま進む道」「別の方向へ進む道」として表示します。
 if (typeof window !== 'undefined' && /\/owner-test\.html$/.test(window.location.pathname)) {
-  const replacements = [
-    ['一つ目の候補を入力してください。','今のまま進む道を入力してください。'],
-    ['もう一つの候補を入力してください。','別の方向へ進む道を入力してください。'],
-    ['候補1とは違う内容を入力してください。','「今のまま進む道」とは違う内容を入力してください。'],
-    ['候補1と候補2','今のまま進む道と別の方向へ進む道'],
-    ['候補1','今のまま進む道'],
-    ['候補2','別の方向へ進む道']
-  ];
-
-  const replaceText = (value) => replacements.reduce(
-    (text,[from,to]) => text.includes(from) ? text.split(from).join(to) : text,
-    value
-  );
-
-  const updateNode = (root = document.body) => {
-    if (!root) return;
-    const walker = document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      const next = replaceText(node.nodeValue || '');
-      if (next !== node.nodeValue) node.nodeValue = next;
-    });
-    root.querySelectorAll?.('[aria-label],[title],[placeholder]').forEach((element) => {
-      ['aria-label','title','placeholder'].forEach((attribute) => {
-        const current = element.getAttribute(attribute);
-        if (!current) return;
-        const next = replaceText(current);
-        if (next !== current) element.setAttribute(attribute,next);
-      });
-    });
-  };
-
-  const start = () => {
-    updateNode();
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            const next = replaceText(node.nodeValue || '');
-            if (next !== node.nodeValue) node.nodeValue = next;
-          } else if (node.nodeType === Node.ELEMENT_NODE) {
-            updateNode(node);
-          }
-        });
-      });
-    });
-    observer.observe(document.body,{ childList:true,subtree:true });
-  };
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{ once:true });
-  else start();
+  import('./owner-test-v3.js?v=3.3.0')
+    .then((module) => module.initOwnerTestEnhancements?.())
+    .catch((error) => console.error('owner_test_enhancement_failed', error));
 }
