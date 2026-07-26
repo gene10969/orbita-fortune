@@ -72,6 +72,7 @@ async function reinstallFinalTarotController(){
 
   let timer=0;
   let refreshing=false;
+  let refreshAttempts=0;
 
   const schedule=()=>{
     window.clearTimeout(timer);
@@ -93,8 +94,17 @@ async function reinstallFinalTarotController(){
       return art.dataset.ownerConceptName!==name||!label.includes(`${name}を表した`);
     });
 
-    if(!mismatched.length) return;
+    if(!mismatched.length){
+      refreshAttempts=0;
+      return;
+    }
 
+    if(refreshAttempts>=12){
+      console.error('owner_final_tarot_refresh_limit',mismatched.length);
+      return;
+    }
+
+    refreshAttempts+=1;
     refreshing=true;
     mismatched.forEach((card)=>{
       const art=card.querySelector('.owner-tarot-illustration');
