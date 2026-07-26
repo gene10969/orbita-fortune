@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#080704">
+  <title>ORBITA｜運営者テスト</title>
+  <style>
+    :root{--bg:#050504;--panel:#0d0b07;--gold:#d7b66c;--gold2:#f0d999;--text:#f6efe1;--muted:#aaa08d;--line:rgba(215,182,108,.28);--danger:#e6a19c}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,rgba(199,158,75,.12),transparent 34%),#050504;color:var(--text);font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",system-ui,sans-serif;line-height:1.75}button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{width:min(980px,calc(100vw - 28px));margin:auto;padding:26px 0 80px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}.brand{font-family:Georgia,serif;letter-spacing:.22em;color:var(--gold2);font-size:20px}.badge{border:1px solid var(--gold);border-radius:999px;padding:5px 12px;color:var(--gold2);font-size:12px}.panel{margin-top:24px;padding:24px;border:1px solid var(--line);border-radius:20px;background:rgba(13,11,7,.92)}.hidden{display:none!important}h1,h2,h3{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-weight:500}h1{font-size:clamp(28px,5vw,45px);margin:16px 0 8px}h2{font-size:24px;margin:0 0 8px}.muted{color:var(--muted)}.field{display:block;margin:18px 0}.field span{display:block;margin-bottom:7px;color:#d7cdbb;font-size:13px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:12px;background:#070604;color:var(--text);padding:14px;outline:none}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(215,182,108,.08)}.button{min-height:50px;border-radius:999px;border:1px solid var(--line);padding:0 22px;background:transparent;color:var(--gold2);display:inline-flex;align-items:center;justify-content:center}.button.primary{border:0;background:linear-gradient(135deg,#f0d999,#bd913e);color:#181106;font-weight:700}.button:disabled{opacity:.5;cursor:not-allowed}.error{margin-top:12px;padding:11px 13px;border:1px solid rgba(230,161,156,.4);border-radius:10px;color:#efbbb5;background:rgba(90,35,31,.2)}.advisor-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:20px}.advisor{padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#080704;color:var(--text);text-align:left}.advisor img{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center top;display:block}.advisor div{padding:11px}.advisor strong{display:block;color:var(--gold2)}.advisor small{color:var(--muted)}.advisor.selected{border-color:var(--gold2);box-shadow:0 0 0 2px rgba(215,182,108,.18)}.chat-head{display:grid;grid-template-columns:74px 1fr;gap:14px;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line)}.chat-head img{width:74px;height:74px;object-fit:cover;object-position:center top;border-radius:50%;border:1px solid var(--gold)}.messages{min-height:300px;max-height:520px;overflow:auto;padding:18px 0}.message{display:flex;margin:12px 0}.message.user{justify-content:flex-end}.bubble{max-width:min(76%,650px);padding:12px 15px;border-radius:16px;background:#151109;border:1px solid var(--line);white-space:pre-wrap}.message.user .bubble{background:linear-gradient(135deg,#d8b765,#ad8134);color:#171006;border:0}.controls{border-top:1px solid var(--line);padding-top:16px}.choices{display:flex;flex-wrap:wrap;gap:8px}.choice{border:1px solid var(--line);border-radius:999px;background:#080704;color:var(--gold2);padding:10px 15px}.input-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}.input-row textarea{min-height:108px}.summary{display:grid;grid-template-columns:170px 1fr;gap:6px 14px;margin:12px 0}.summary dt{color:var(--muted)}.summary dd{margin:0}.progress{text-align:center;padding:50px 20px}.orb{width:150px;height:150px;border:1px solid var(--gold);border-radius:50%;margin:0 auto 24px;display:grid;place-items:center;position:relative}.orb:before,.orb:after{content:"";position:absolute;border:1px solid rgba(215,182,108,.28);border-radius:50%;inset:18px}.orb:after{inset:40px;animation:spin 4s linear infinite;border-style:dashed}@keyframes spin{to{transform:rotate(360deg)}}.count{font:34px Georgia;color:var(--gold2)}.result-head{text-align:center}.scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}.score,.card,.narrative,.day{border:1px solid var(--line);border-radius:14px;padding:18px;background:#0a0805}.score strong{display:block;font:42px Georgia;color:var(--gold2)}.cards,.narratives,.days{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.narratives{grid-template-columns:repeat(2,1fr)}.days{grid-template-columns:repeat(2,1fr)}.card .glyph{font-size:34px;color:var(--gold2)}.section-title{text-align:center;margin:42px 0 18px}.notice{margin-top:24px;color:var(--muted);font-size:12px}.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:28px}@media(max-width:800px){.advisor-grid{grid-template-columns:repeat(2,1fr)}.cards,.narratives,.days{grid-template-columns:1fr}.scores{grid-template-columns:1fr}}@media(max-width:520px){.wrap{width:min(100% - 18px,980px)}.panel{padding:17px}.advisor-grid{grid-template-columns:1fr 1fr}.input-row{grid-template-columns:1fr}.bubble{max-width:88%}.summary{grid-template-columns:1fr}.summary dt{margin-top:8px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><div class="brand">ORBITA</div><div class="badge">運営者テスト</div></header>
+
+    <section id="gate" class="panel">
+      <p class="muted">このページは公開サイトからリンクしていません。</p>
+      <h1>テスト用アクセス</h1>
+      <p>アクセスキーを入力すると、予約時間を待たずに鑑定の流れを確認できます。</p>
+      <label class="field"><span>アクセスキー</span><input id="access-key" type="password" autocomplete="off" placeholder="アクセスキーを入力"></label>
+      <button id="unlock" class="button primary" type="button">テストを開始</button>
+      <div id="gate-error" class="error hidden"></div>
+    </section>
+
+    <section id="chooser" class="panel hidden">
+      <p class="muted">実際の予約枠には影響しません。どの時間帯でも試せます。</p>
+      <h1>鑑定パートナーを選ぶ</h1>
+      <div id="advisor-grid" class="advisor-grid"></div>
+      <div class="actions"><button id="begin-chat" class="button primary" type="button" disabled>この相手でチャットを試す</button></div>
+    </section>
+
+    <section id="chat" class="panel hidden">
+      <div id="chat-head" class="chat-head"></div>
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <div id="controls" class="controls"></div>
+    </section>
+
+    <section id="waiting" class="panel hidden progress">
+      <div class="orb"><span id="countdown" class="count">00:20</span></div>
+      <h1 id="waiting-title">相談内容を整理しています</h1>
+      <p id="waiting-detail" class="muted">入力内容と選んだ占い方法を確認しています。</p>
+    </section>
+
+    <section id="result" class="panel hidden"><div id="result-root"></div></section>
+  </main>
+
+  <script type="module">
+    import { ADVISORS, getAdvisor, getMethod } from './advisors.js';
+    import { generateReading } from './engine.js';
+
+    const ACCESS_HASH = '1bd8b7c7ad51fa99f71175f53d5f9f377ca8c42ac27d1f8f9059e0b426a23ef6';
+    const AUTH_KEY = 'orbita_owner_test_until';
+    const TEST_SECONDS = 20;
+    const $ = (selector,root=document) => root.querySelector(selector);
+    const escapeHTML = (value) => String(value ?? '').replace(/[&<>\'"]/g,(char)=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[char]));
+    const CATEGORY_LABELS = { love:'恋愛',work:'仕事・転職',relationship:'人間関係',money:'お金',life:'人生・将来',other:'その他' };
+    const TIMEFRAME_LABELS = { '7days':'7日以内','1month':'1か月以内','3months':'3か月以内','1year':'1年以内' };
+    let advisorId = '';
+    let step = 0;
+    let answers = {};
+    let messages = [];
+    let reading = null;
+
+    const steps = [
+      { key:'nickname',type:'text',prompt:'まず、鑑定の中でお呼びする名前を教えてください。本名でなくて構いません。',label:'呼び名',placeholder:'例：ミナ',validate:v=>v.trim()?'':'呼び名を入力してください。',ack:v=>`${v}さんですね。ありがとうございます。` },
+      { key:'birthdate',type:'date',prompt:'次に、生年月日を教えてください。',label:'生年月日',validate:v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?'':'生年月日を選択してください。',ack:()=> '確認しました。' },
+      { key:'category',type:'choice',prompt:'今回の相談に一番近い分野を選んでください。',choices:Object.entries(CATEGORY_LABELS),ack:v=>`${CATEGORY_LABELS[v]}についての相談ですね。` },
+      { key:'question',type:'textarea',prompt:'いま迷っていることを、できる範囲で教えてください。短くても大丈夫です。',label:'相談内容',placeholder:'例：今の仕事を続けるか、新しい環境へ移るか迷っています。',validate:v=>v.trim().length>=8?'':'相談内容を8文字以上で入力してください。',ack:()=> '内容を受け取りました。次に二つの選択肢を確認します。' },
+      { key:'optionA',type:'text',prompt:'選択肢Aを、短い言葉で入力してください。',label:'選択肢A',placeholder:'例：今の仕事を続ける',validate:v=>v.trim()?'':'選択肢Aを入力してください。',ack:v=>`Aは「${v}」ですね。` },
+      { key:'optionB',type:'text',prompt:'選択肢Bを入力してください。Aとは違う内容にしてください。',label:'選択肢B',placeholder:'例：新しい仕事へ移る',validate:v=>!v.trim()?'選択肢Bを入力してください。':v.trim()===String(answers.optionA||'').trim()?'AとBは違う内容にしてください。':'',ack:v=>`Bは「${v}」ですね。` },
+      { key:'timeframe',type:'choice',prompt:'どのくらいの期間で考えたいですか？',choices:Object.entries(TIMEFRAME_LABELS),ack:v=>`${TIMEFRAME_LABELS[v]}を目安に考えます。` },
+      { key:'tension',type:'choice',prompt:'今の迷いの強さを1から10で選んでください。',choices:Array.from({length:10},(_,i)=>[String(i+1),String(i+1)]),ack:v=>`迷いの強さは${v}/10ですね。` },
+      { key:'method',type:'method',prompt:'最後に、今回使う占い方法を選んでください。',ack:v=>`${getMethod(v).name}でまとめます。` },
+      { key:'confirm',type:'confirm',prompt:'内容を確認して、テスト鑑定を始めてください。' }
+    ];
+
+    async function sha256(text){
+      const bytes = new TextEncoder().encode(text);
+      const hash = await crypto.subtle.digest('SHA-256',bytes);
+      return [...new Uint8Array(hash)].map(v=>v.toString(16).padStart(2,'0')).join('');
+    }
+
+    function show(id){
+      ['gate','chooser','chat','waiting','result'].forEach(name=>$('#'+name).classList.toggle('hidden',name!==id));
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function authorized(){ return Number(localStorage.getItem(AUTH_KEY)||0)>Date.now(); }
+
+    async function unlock(){
+      const key=$('#access-key').value.trim();
+      const error=$('#gate-error');
+      if(await sha256(key)!==ACCESS_HASH){ error.textContent='アクセスキーが違います。';error.classList.remove('hidden');return; }
+      localStorage.setItem(AUTH_KEY,String(Date.now()+12*60*60*1000));
+      renderAdvisors();show('chooser');
+    }
+
+    function renderAdvisors(){
+      $('#advisor-grid').innerHTML=ADVISORS.map(a=>`<button class="advisor ${a.id===advisorId?'selected':''}" type="button" data-advisor="${escapeHTML(a.id)}"><img src="${escapeHTML(a.image)}?v=3.1.0" alt="${escapeHTML(a.name)}"><div><strong>${escapeHTML(a.name)}</strong><small>${escapeHTML(a.type)}・${a.age}歳</small></div></button>`).join('');
+      document.querySelectorAll('[data-advisor]').forEach(button=>button.addEventListener('click',()=>{advisorId=button.dataset.advisor;renderAdvisors();$('#begin-chat').disabled=false;}));
+    }
+
+    function addMessage(role,text){messages.push({role,text});renderMessages();}
+    function renderMessages(){
+      $('#messages').innerHTML=messages.map(m=>`<div class="message ${m.role}"><div class="bubble">${escapeHTML(m.text)}</div></div>`).join('');
+      $('#messages').scrollTop=$('#messages').scrollHeight;
+    }
+
+    function startChat(){
+      const a=getAdvisor(advisorId);step=0;answers={};messages=[];
+      $('#chat-head').innerHTML=`<img src="${escapeHTML(a.image)}?v=3.1.0" alt="${escapeHTML(a.name)}"><div><h2>${escapeHTML(a.name)}</h2><p class="muted">${escapeHTML(a.type)}｜予約を待たないテスト鑑定</p></div>`;
+      addMessage('agent',`${a.name}です。今回は運営者テストとして、予約時間を待たずに進めます。`);
+      addMessage('agent',steps[0].prompt);renderControls();show('chat');
+    }
+
+    function renderControls(){
+      const root=$('#controls');const current=steps[step];
+      if(current.type==='choice'){
+        root.innerHTML=`<div class="choices">${current.choices.map(([v,l])=>`<button class="choice" type="button" data-value="${escapeHTML(v)}" data-label="${escapeHTML(l)}">${escapeHTML(l)}</button>`).join('')}</div>`;
+        root.querySelectorAll('[data-value]').forEach(b=>b.addEventListener('click',()=>submitAnswer(b.dataset.value,b.dataset.label)));
+        return;
+      }
+      if(current.type==='method'){
+        const a=getAdvisor(advisorId);root.innerHTML=`<div class="choices">${a.methods.map(id=>`<button class="choice" type="button" data-value="${escapeHTML(id)}" data-label="${escapeHTML(getMethod(id).name)}">${escapeHTML(getMethod(id).name)}</button>`).join('')}</div>`;
+        root.querySelectorAll('[data-value]').forEach(b=>b.addEventListener('click',()=>submitAnswer(b.dataset.value,b.dataset.label)));
+        return;
+      }
+      if(current.type==='confirm'){
+        const a=getAdvisor(advisorId);
+        root.innerHTML=`<dl class="summary"><dt>鑑定パートナー</dt><dd>${escapeHTML(a.name)}</dd><dt>呼び名</dt><dd>${escapeHTML(answers.nickname)}</dd><dt>相談内容</dt><dd>${escapeHTML(answers.question)}</dd><dt>選択肢A</dt><dd>${escapeHTML(answers.optionA)}</dd><dt>選択肢B</dt><dd>${escapeHTML(answers.optionB)}</dd><dt>占い方法</dt><dd>${escapeHTML(getMethod(answers.method).name)}</dd></dl><div id="confirm-error" class="error hidden"></div><button id="run-test" class="button primary" type="button">約20秒のテスト鑑定を開始</button>`;
+        $('#run-test').addEventListener('click',runTest);return;
+      }
+      const inputType=current.type==='date'?'date':'text';
+      const element=current.type==='textarea'?`<textarea id="answer" rows="4" placeholder="${escapeHTML(current.placeholder||'')}"></textarea>`:`<input id="answer" type="${inputType}" ${current.type==='date'?'max="2008-12-31"':''} placeholder="${escapeHTML(current.placeholder||'')}">`;
+      root.innerHTML=`<div class="input-row"><label class="field" style="margin:0"><span>${escapeHTML(current.label||'回答')}</span>${element}<div id="answer-error" class="error hidden"></div></label><button id="send" class="button primary" type="button">送信</button></div>`;
+      $('#send').addEventListener('click',()=>submitAnswer($('#answer').value,$('#answer').value));
+      $('#answer').addEventListener('keydown',e=>{if(e.key==='Enter'&&!(current.type==='textarea'&&e.shiftKey)){e.preventDefault();$('#send').click();}});
+      $('#answer').focus();
+    }
+
+    function submitAnswer(value,label){
+      const current=steps[step];const clean=String(value||'').trim();const error=current.validate?current.validate(clean):'';
+      if(error){const box=$('#answer-error');if(box){box.textContent=error;box.classList.remove('hidden');}return;}
+      addMessage('user',label||clean);answers[current.key]=clean;step+=1;
+      const next=steps[step];addMessage('agent',`${current.ack?current.ack(clean):'ありがとうございます。'}\n\n${next.prompt}`);renderControls();
+    }
+
+    function runTest(){
+      const a=getAdvisor(advisorId);const now=new Date();
+      const input={nickname:answers.nickname,birthdate:answers.birthdate,category:answers.category,question:answers.question,optionA:answers.optionA,optionB:answers.optionB,timeframe:answers.timeframe,tension:Number(answers.tension||5),readingDate:now.toISOString().slice(0,10),advisorId:a.id,advisorName:a.name,advisorTone:a.tone,method:answers.method,bookingStart:now.toISOString()};
+      const generated=generateReading(input);
+      if(!generated.ok){const box=$('#confirm-error');box.textContent=generated.safety?.message||(generated.errors||['入力内容を確認してください。']).join(' ');box.classList.remove('hidden');return;}
+      reading=generated;show('waiting');let remaining=TEST_SECONDS;updateWait(remaining);
+      const timer=setInterval(()=>{remaining-=1;updateWait(remaining);if(remaining<=0){clearInterval(timer);renderResult();show('result');}},1000);
+    }
+
+    function updateWait(seconds){
+      $('#countdown').textContent=`00:${String(Math.max(0,seconds)).padStart(2,'0')}`;
+      if(seconds<=5){$('#waiting-title').textContent='最終確認をしています';$('#waiting-detail').textContent='分かりにくい表現や矛盾がないか確認しています。';}
+      else if(seconds<=12){$('#waiting-title').textContent='次にできることをまとめています';$('#waiting-detail').textContent='大きな決断ではなく、まず試せる行動に整理しています。';}
+    }
+
+    function renderResult(){
+      const a=getAdvisor(advisorId);const r=reading;const labels=['今の状況','気をつけたい点','次にやること'];
+      $('#result-root').innerHTML=`<div class="result-head"><p class="muted">${escapeHTML(a.name)}｜${escapeHTML(getMethod(r.input.method).name)}</p><h1>${escapeHTML(r.input.nickname)}さんの鑑定結果</h1><h2>${escapeHTML(r.decision.text)}</h2><p class="muted">下の数字は成功率ではなく、今の状況でどちらから試しやすいかを比べた目安です。</p></div><div class="scores"><article class="score"><span>Aを試しやすい度</span><h3>${escapeHTML(r.input.optionA)}</h3><strong>${r.scores.a}/100</strong></article><article class="score"><span>Bを試しやすい度</span><h3>${escapeHTML(r.input.optionB)}</h3><strong>${r.scores.b}/100</strong></article></div><h2 class="section-title">3枚の象徴カード</h2><div class="cards">${r.cards.map((c,i)=>`<article class="card"><div class="glyph">${escapeHTML(c.glyph)}</div><small>${labels[i]}</small><h3>${escapeHTML(c.name)}</h3><p>${escapeHTML(i===1?c.shadow:c.light)}</p><p><strong>行動：</strong>${escapeHTML(c.action)}</p></article>`).join('')}</div><h2 class="section-title">今回の読み解き</h2><div class="narratives"><article class="narrative"><h3>今の状況</h3><p>${escapeHTML(r.narrative.overview)}</p></article><article class="narrative"><h3>見落としやすい点</h3><p>${escapeHTML(r.narrative.hidden)}</p></article><article class="narrative"><h3>動く前の確認</h3><p>${escapeHTML(r.narrative.timing)}</p></article><article class="narrative"><h3>今回のまとめ</h3><p>${escapeHTML(r.narrative.closing)}</p></article></div><h2 class="section-title">次の7日間でできること</h2><div class="days">${r.plan.map(item=>`<article class="day"><small>DAY ${item.day}</small><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.body)}</p></article>`).join('')}</div><p class="notice">${escapeHTML(r.disclaimer)}</p><div class="actions"><button id="again" class="button primary" type="button">別の相手で試す</button><a class="button" href="index.html">公開サイトへ戻る</a></div>`;
+      $('#again').addEventListener('click',()=>{advisorId='';reading=null;renderAdvisors();$('#begin-chat').disabled=true;show('chooser');});
+    }
+
+    $('#unlock').addEventListener('click',unlock);
+    $('#access-key').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+    $('#begin-chat').addEventListener('click',startChat);
+    if(authorized()){renderAdvisors();show('chooser');}
+  </script>
+</body>
+</html>
