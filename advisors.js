@@ -81,7 +81,7 @@ export function getMethod(id) {
 }
 
 if (typeof window !== 'undefined' && /\/owner-test\.html$/.test(window.location.pathname)) {
-  import('./owner-test-v4.js?v=4.1.0')
-    .then((module) => module.initOwnerTestV4?.())
-    .catch((error) => console.error('owner_test_v4_failed', error));
+  import('./owner-test-v5.js?v=5.0.0')
+    .then((module) => module.initOwnerTestV5?.())
+    .catch((error) => console.error('owner_test_v5_failed', error));
 }
