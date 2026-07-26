@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#080704">
+  <title>ORBITA｜タロットカード全24枚</title>
+  <style>
+    :root{--bg:#050504;--panel:#0d0b07;--gold:#d7b66c;--gold2:#f2dda0;--text:#f6efe1;--muted:#aaa08d;--line:rgba(215,182,108,.30);--radius:20px}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(circle at 50% -10%,rgba(199,158,75,.13),transparent 35%),radial-gradient(circle at 85% 20%,rgba(125,78,28,.08),transparent 25%),#050504;font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",system-ui,sans-serif;line-height:1.7}
+    button,input{font:inherit}.wrap{width:min(1380px,calc(100vw - 28px));margin:auto;padding:26px 0 80px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}.brand{font-family:Georgia,serif;letter-spacing:.22em;color:var(--gold2);font-size:20px}.badge{border:1px solid var(--gold);border-radius:999px;padding:5px 12px;color:var(--gold2);font-size:12px}.panel{margin-top:24px;padding:28px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(13,11,7,.94)}.hidden{display:none!important}h1,h2{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-weight:500}h1{font-size:clamp(30px,5vw,48px);margin:12px 0 8px}.muted{color:var(--muted)}.field{display:block;margin:18px 0}.field span{display:block;margin-bottom:7px;color:#d7cdbb;font-size:13px}.field input{width:100%;border:1px solid var(--line);border-radius:12px;background:#070604;color:var(--text);padding:14px;outline:none}.button{min-height:50px;border-radius:999px;border:1px solid var(--line);padding:0 22px;background:transparent;color:var(--gold2);cursor:pointer}.button.primary{border:0;background:linear-gradient(135deg,#f0d999,#bd913e);color:#181106;font-weight:700}.error{margin-top:12px;padding:11px 13px;border:1px solid rgba(230,161,156,.4);border-radius:10px;color:#efbbb5;background:rgba(90,35,31,.2)}.head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}.count{color:var(--gold2);border:1px solid var(--line);border-radius:999px;padding:7px 13px}.loading{min-height:320px;display:grid;place-items:center;text-align:center}.loading-mark{width:94px;height:94px;margin:0 auto 18px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;position:relative;color:var(--gold2);font:28px Georgia}.loading-mark:before,.loading-mark:after{content:"";position:absolute;border:1px solid rgba(215,182,108,.25);border-radius:50%}.loading-mark:before{inset:12px}.loading-mark:after{inset:27px;border-style:dashed;animation:spin 5s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:26px}.card{border:1px solid var(--line);border-radius:20px;background:#080704;padding:12px;overflow:hidden}.card-number{text-align:center;color:var(--gold);font:12px Georgia;letter-spacing:.18em;padding:4px 0 10px}.art{aspect-ratio:2/3;border:1px solid rgba(215,182,108,.35);border-radius:15px;overflow:hidden;background:#060506}.art svg{display:block;width:100%;height:100%}.card h2{margin:14px 4px 4px;text-align:center;color:var(--gold2);font-size:21px}.card p{margin:0 4px 6px;text-align:center;color:var(--muted);font-size:13px}.notice{margin-top:24px;padding:15px 17px;border:1px solid var(--line);border-radius:14px;color:#d9cfbd;background:rgba(215,182,108,.05)}.source-frame{position:fixed;left:-9999px;top:-9999px;width:2px;height:2px;opacity:0;pointer-events:none;border:0}@media(max-width:1050px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.panel{padding:18px}}@media(max-width:470px){.wrap{width:min(100% - 16px,1380px)}.grid{grid-template-columns:1fr}.card{padding:10px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><div class="brand">ORBITA</div><div class="badge">運営者専用</div></header>
+
+    <section id="gate" class="panel">
+      <p class="muted">公開サイトからはリンクしていません。</p>
+      <h1>タロットカード全24枚</h1>
+      <p>運営者テストと同じ描画データを使い、全カードの名称とイラストを一覧で確認します。</p>
+      <label class="field"><span>アクセスキー</span><input id="access-key" type="password" autocomplete="off" placeholder="アクセスキーを入力"></label>
+      <button id="unlock" class="button primary" type="button">全カードを表示</button>
+      <div id="gate-error" class="error hidden"></div>
+    </section>
+
+    <section id="gallery" class="panel hidden">
+      <div class="head-row"><div><p class="muted">ORBITA ORIGINAL TAROT</p><h1>全24枚のイラスト</h1></div><div class="count">24種類</div></div>
+      <div id="loading" class="loading"><div><div class="loading-mark">✦</div><p>カードイラストを読み込んでいます</p></div></div>
+      <div id="card-grid" class="grid hidden"></div>
+      <div class="notice">鑑定では、この24種類から重複しない3枚が選ばれます。イラストは運営者テストの結果画面と同じ描画データです。</div>
+    </section>
+  </main>
+
+  <iframe id="source-frame" class="source-frame" title="カード描画用" aria-hidden="true"></iframe>
+
+  <script>
+    const ACCESS_KEY='ORB-OEWA-OZ29';
+    const ACCESS_STORE='orbita_owner_tarot_gallery_access_v1';
+    const CARD_NAMES=['静かな塔','開いた扉','金の糸','月の井戸','最初の火花','還る潮','硝子の橋','封じた手紙','北の窓','小さな鍵','灯る前のランタン','二つの岸','隠れた階段','金の天秤','雨あがり','鏡の部屋','石の種','横風','空いた椅子','夜明けの線','根の地図','白い羽','鳴らない鐘','軌道変更'];
+    const $=(selector,root=document)=>root.querySelector(selector);
+
+    $('#unlock').addEventListener('click',unlock);
+    $('#access-key').addEventListener('keydown',(event)=>{if(event.key==='Enter') unlock();});
+
+    if(Number(sessionStorage.getItem(ACCESS_STORE)||0)>Date.now()) openGallery();
+
+    function unlock(){
+      if($('#access-key').value.trim()!==ACCESS_KEY){
+        $('#gate-error').textContent='アクセスキーが違います。';
+        $('#gate-error').classList.remove('hidden');
+        return;
+      }
+      sessionStorage.setItem(ACCESS_STORE,String(Date.now()+12*60*60*1000));
+      openGallery();
+    }
+
+    function openGallery(){
+      $('#gate').classList.add('hidden');
+      $('#gallery').classList.remove('hidden');
+      const frame=$('#source-frame');
+      frame.addEventListener('load',()=>window.setTimeout(()=>prepareCards(frame),1800),{once:true});
+      frame.src=`owner-test.html?tarot-gallery=1&v=${Date.now()}`;
+    }
+
+    function prepareCards(frame){
+      try{
+        const doc=frame.contentDocument;
+        const root=doc?.querySelector('#result-root');
+        if(!root) throw new Error('result_root_not_found');
+        root.innerHTML=CARD_NAMES.map((name,index)=>`<article class="tarot-card"><div class="owner-tarot-illustration"></div><h3>${escapeHTML(name)}</h3><p class="position">カード ${String(index+1).padStart(2,'0')}</p></article>`).join('');
+        waitForRenderedCards(frame,0);
+      }catch(error){
+        showError('カード描画データを読み込めませんでした。ページを再読み込みしてください。');
+        console.error(error);
+      }
+    }
+
+    function waitForRenderedCards(frame,attempt){
+      const doc=frame.contentDocument;
+      const svgs=[...(doc?.querySelectorAll('#result-root .owner-tarot-illustration svg')||[])];
+      if(svgs.length===CARD_NAMES.length){
+        const grid=$('#card-grid');
+        grid.innerHTML=svgs.map((svg,index)=>`<article class="card"><div class="card-number">CARD ${String(index+1).padStart(2,'0')}</div><div class="art">${svg.outerHTML}</div><h2>${escapeHTML(CARD_NAMES[index])}</h2><p>ORBITAオリジナルタロット</p></article>`).join('');
+        $('#loading').classList.add('hidden');
+        grid.classList.remove('hidden');
+        return;
+      }
+      if(attempt>=60){
+        showError('全カードの描画に時間がかかっています。Ctrl＋F5で再読み込みしてください。');
+        return;
+      }
+      window.setTimeout(()=>waitForRenderedCards(frame,attempt+1),250);
+    }
+
+    function showError(message){
+      $('#loading').innerHTML=`<div class="error">${escapeHTML(message)}</div>`;
+    }
+
+    function escapeHTML(value){
+      return String(value??'').replace(/[&<>'"]/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    }
+  </script>
+</body>
+</html>
