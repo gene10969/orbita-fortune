@@ -1,4 +1,4 @@
-const VERSION='4.1.0';
+const VERSION='4.3.0';
 
 export async function initOwnerTestV4(){
   if(!/\/owner-test\.html$/.test(location.pathname)) return;
@@ -7,66 +7,15 @@ export async function initOwnerTestV4(){
   installWaitingController();
 
   const NativeMutationObserver=window.MutationObserver;
-  window.MutationObserver=createBatchedMutationObserver(NativeMutationObserver);
 
   try{
     const module=await import(`./owner-test-v3.js?v=${VERSION}`);
     module.initOwnerTestEnhancements?.();
   }catch(error){
     console.error('owner_test_v3_load_failed',error);
-  }finally{
-    window.MutationObserver=NativeMutationObserver;
   }
 
   installTarotTitleController(NativeMutationObserver);
-}
-
-function createBatchedMutationObserver(NativeMutationObserver){
-  return class BatchedMutationObserver{
-    constructor(callback){
-      this.callback=callback;
-      this.records=[];
-      this.timer=0;
-      this.native=new NativeMutationObserver((records)=>{
-        this.records.push(...records);
-        if(this.timer) return;
-        this.timer=window.setTimeout(()=>this.flush(),32);
-      });
-    }
-
-    flush(){
-      window.clearTimeout(this.timer);
-      this.timer=0;
-      const records=this.records.splice(0);
-      if(!records.length) return;
-
-      const addedElements=[];
-      for(const record of records){
-        for(const node of record.addedNodes||[]){
-          if(node.nodeType===Node.ELEMENT_NODE) addedElements.push(node);
-        }
-      }
-
-      const first=addedElements[0];
-      const target=first?.closest?.('#result-panel,#chat-panel,#waiting-panel,#advisor-panel')||first||document.body;
-      const collapsedRecord={addedNodes:[target]};
-
-      try{
-        this.callback([collapsedRecord],this);
-      }catch(error){
-        console.error('owner_test_observer_callback_failed',error);
-      }
-    }
-
-    observe(...args){return this.native.observe(...args);}
-    disconnect(){
-      window.clearTimeout(this.timer);
-      this.timer=0;
-      this.records.length=0;
-      return this.native.disconnect();
-    }
-    takeRecords(){return this.native.takeRecords();}
-  };
 }
 
 function injectWaitingStyles(){

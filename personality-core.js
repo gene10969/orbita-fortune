@@ -1,28 +1,29 @@
-export const PERSONALITY_ENGINE_VERSION = '1.0.0';
+export const PERSONALITY_ENGINE_VERSION = '1.1.0';
 
-// Exact Mini-IPIP item structure. Japanese wording is based on the Japanese
-// translation of the IPIP 50-item Big-Five factor markers hosted by IPIP.
+// Item identity, domain and reverse-key structure follow Mini-IPIP exactly.
+// Japanese wording keeps the source construct while clarifying the distinct
+// behavioral focus of items that can otherwise sound repetitive in Japanese.
 export const MINI_IPIP_ITEMS = Object.freeze([
-  { id:'e1', domain:'E', reverse:false, text:'盛り上げ役である' },
-  { id:'a1', domain:'A', reverse:false, text:'人に共感しやすい' },
-  { id:'c1', domain:'C', reverse:false, text:'すぐに雑用や用事を済ませる' },
-  { id:'n1', domain:'N', reverse:false, text:'気分が著しく変化するほうだ' },
-  { id:'o1', domain:'O', reverse:false, text:'想像力が豊かである' },
-  { id:'e2', domain:'E', reverse:true,  text:'おしゃべりではない' },
-  { id:'a2', domain:'A', reverse:true,  text:'他人の問題には興味がない' },
-  { id:'c2', domain:'C', reverse:true,  text:'整理した物を元の場所へ戻し忘れることが多い' },
-  { id:'n2', domain:'N', reverse:true,  text:'いつもリラックスしていることが多い' },
-  { id:'o2', domain:'O', reverse:true,  text:'抽象的な考えには興味がない' },
-  { id:'e3', domain:'E', reverse:false, text:'人が集まる場では、いろいろな人と話すほうだ' },
-  { id:'a3', domain:'A', reverse:false, text:'他の人の気持ちがわかる' },
-  { id:'c3', domain:'C', reverse:false, text:'整頓するのが好きである' },
-  { id:'n3', domain:'N', reverse:false, text:'慌てたり動揺したりしやすい' },
-  { id:'o3', domain:'O', reverse:true,  text:'抽象的な考えを理解するのが苦手だ' },
-  { id:'e4', domain:'E', reverse:true,  text:'引っ込み思案である' },
-  { id:'a4', domain:'A', reverse:true,  text:'他人にはあまり興味がない' },
-  { id:'c4', domain:'C', reverse:true,  text:'物事を散らかしたままにしやすい' },
-  { id:'n4', domain:'N', reverse:true,  text:'落ち込むことはめったにない' },
-  { id:'o4', domain:'O', reverse:true,  text:'アイデアや想像が乏しいほうだ' }
+  { id:'e1', domain:'E', reverse:false, focus:'social_energy', text:'盛り上げ役である' },
+  { id:'a1', domain:'A', reverse:false, focus:'empathic_concern', text:'人がつらそうなとき、その気持ちに寄り添うほうだ' },
+  { id:'c1', domain:'C', reverse:false, focus:'task_initiation', text:'すぐに雑用や用事を済ませる' },
+  { id:'n1', domain:'N', reverse:false, focus:'mood_variability', text:'気分が著しく変化するほうだ' },
+  { id:'o1', domain:'O', reverse:false, focus:'vivid_imagery', text:'頭の中で情景を鮮やかに思い浮かべるほうだ' },
+  { id:'e2', domain:'E', reverse:true,  focus:'verbal_output', text:'おしゃべりではない' },
+  { id:'a2', domain:'A', reverse:true,  focus:'problem_concern', text:'人が抱えている悩みや問題には、あまり関心がない' },
+  { id:'c2', domain:'C', reverse:true,  focus:'object_return', text:'整理した物を元の場所へ戻し忘れることが多い' },
+  { id:'n2', domain:'N', reverse:true,  focus:'baseline_relaxation', text:'いつもリラックスしていることが多い' },
+  { id:'o2', domain:'O', reverse:true,  focus:'abstract_interest', text:'理論や概念など、抽象的な考えにはあまり興味がない' },
+  { id:'e3', domain:'E', reverse:false, focus:'social_breadth', text:'人が集まる場では、いろいろな人と話すほうだ' },
+  { id:'a3', domain:'A', reverse:false, focus:'emotional_resonance', text:'相手の喜びや悲しみが、自分にも伝わってくるほうだ' },
+  { id:'c3', domain:'C', reverse:false, focus:'order_preference', text:'整頓するのが好きである' },
+  { id:'n3', domain:'N', reverse:false, focus:'upset_reactivity', text:'慌てたり動揺したりしやすい' },
+  { id:'o3', domain:'O', reverse:true,  focus:'abstract_comprehension', text:'抽象的な説明から内容を理解するのは苦手だ' },
+  { id:'e4', domain:'E', reverse:true,  focus:'background_preference', text:'引っ込み思案である' },
+  { id:'a4', domain:'A', reverse:true,  focus:'person_interest', text:'周囲の人がどんな人なのか、あまり知りたいと思わない' },
+  { id:'c4', domain:'C', reverse:true,  focus:'messiness', text:'物事を散らかしたままにしやすい' },
+  { id:'n4', domain:'N', reverse:true,  focus:'low_sadness', text:'落ち込むことはめったにない' },
+  { id:'o4', domain:'O', reverse:true,  focus:'generative_imagination', text:'新しい場面やアイデアを想像するのは苦手だ' }
 ]);
 
 export const RESPONSE_OPTIONS = Object.freeze([

@@ -1,7 +1,10 @@
-const VERSION='3.3.0';
+const VERSION='3.5.0';
 
 export function initOwnerTestEnhancements(){
   if(!/\/owner-test\.html$/.test(location.pathname)) return;
+  if(document.body.dataset.ownerTestEnhancements==='true') return;
+  document.body.dataset.ownerTestEnhancements='true';
+
   injectStyles();
   enhance(document.body);
   const observer=new MutationObserver((mutations)=>{
@@ -126,6 +129,8 @@ function makeRecommendationAssertive(root){
 function relabelPaths(root){
   const cards=[...root.querySelectorAll('.choice-result')];
   cards.forEach((card,index)=>{
+    if(card.dataset.ownerPathLabel==='true') return;
+
     const smalls=card.querySelectorAll('small');
     if(smalls[0]) smalls[0].textContent=index===0?'今のまま進む道':'別の方向へ進む道';
     const status=card.querySelector('p');
@@ -143,6 +148,7 @@ function relabelPaths(root){
         .replace('おすすめの強さ：やや高め','この道を選ぶ強さ：やや強い')
         .replace('おすすめの強さ：慎重','この道を選ぶ強さ：弱い');
     }
+    card.dataset.ownerPathLabel='true';
   });
 }
 

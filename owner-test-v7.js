@@ -1,4 +1,4 @@
-const VERSION='7.0.0';
+const VERSION='7.4.0';
 const IDENTITY_STORE='orbita_owner_identity_v2';
 const PERSONALITY_STORE='orbita_owner_personality_v1';
 
@@ -130,9 +130,13 @@ function installLateIdentityBridge(){
     save.dataset.ownerIdentityBridged='true';
     fullName.value=identity.fullName;
     kana.value=identity.kana;
-    fullName.closest('.owner-depth-panel')?.classList.add('owner-identity-autofill');
+    const panel=fullName.closest('.owner-depth-panel');
+    panel?.classList.add('owner-identity-autofill');
 
-    window.requestAnimationFrame(()=>save.click());
+    window.requestAnimationFrame(()=>{
+      save.click();
+      panel?.classList.remove('owner-identity-autofill');
+    });
   };
 
   const observer=new MutationObserver(bridge);

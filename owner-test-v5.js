@@ -1,4 +1,4 @@
-const VERSION='5.0.0';
+const VERSION='5.3.0';
 
 export async function initOwnerTestV5(){
   if(!/\/owner-test\.html$/.test(location.pathname)) return;
@@ -18,10 +18,14 @@ function installIllustrationController(){
   if(!root||root.dataset.ownerTarotConceptController==='true') return;
   root.dataset.ownerTarotConceptController='true';
 
-  let timer=0;
+  let scheduled=false;
   const schedule=()=>{
-    window.clearTimeout(timer);
-    timer=window.setTimeout(applyConceptIllustrations,100);
+    if(scheduled) return;
+    scheduled=true;
+    window.requestAnimationFrame(()=>{
+      scheduled=false;
+      applyConceptIllustrations(root);
+    });
   };
 
   const observer=new MutationObserver(schedule);
@@ -29,16 +33,32 @@ function installIllustrationController(){
   schedule();
 }
 
-function applyConceptIllustrations(){
-  const cards=[...document.querySelectorAll('#result-root .tarot-card')];
+export function applyConceptIllustrations(root=document){
+  const cards=[...root.querySelectorAll('.tarot-card')];
 
   cards.forEach((card,index)=>{
-    const art=card.querySelector('.owner-tarot-illustration');
+    const art=card.querySelector('.owner-tarot-illustration,.tarot-art');
     const name=card.querySelector('h3')?.textContent?.trim();
-    if(!art||!name||art.dataset.ownerConceptName===name) return;
+    if(!art||!name) return;
 
+    const currentSVG=art.querySelector('svg');
+    const currentLabel=currentSVG?.getAttribute('aria-label')||'';
+    if(art.dataset.ownerConceptName===name&&currentLabel.includes(`${name}を表した`)) return;
+
+    card.classList.add('owner-tarot-card');
+    card.dataset.ownerTarot='true';
+    art.classList.remove('tarot-art');
+    art.classList.add('owner-tarot-illustration');
     art.innerHTML=buildTarotSVG(name,index);
     art.dataset.ownerConceptName=name;
+
+    const position=card.querySelector('.position');
+    if(position&&!card.querySelector('.owner-tarot-keyword')){
+      const keyword=document.createElement('span');
+      keyword.className='owner-tarot-keyword';
+      keyword.textContent=['現在','注意','行動'][index]||'導き';
+      position.after(keyword);
+    }
 
     const svg=art.querySelector('svg');
     if(svg){
@@ -48,7 +68,7 @@ function applyConceptIllustrations(){
   });
 }
 
-function buildTarotSVG(name,index){
+export function buildTarotSVG(name,index=0){
   const uid=`orbita-concept-${index}-${hashText(name).toString(36)}`;
   const concept=CARD_CONCEPTS[name]||fallbackConcept(name);
   const stars=makeStars(hashText(`${name}|stars`));
@@ -99,6 +119,8 @@ const CARD_CONCEPTS={
   '鳴らない鐘':{glyph:'鐘',svg:(u)=>`<path d="M205 505 Q205 315 300 260 Q395 315 395 505 L445 575 H155Z" fill="url(#${u}-darkgold)" stroke="#f1d992" stroke-width="7"/><path d="M250 575 Q300 635 350 575" fill="none" stroke="#d7b66c" stroke-width="9"/><circle cx="300" cy="590" r="24" fill="url(#${u}-gold)"/><path d="M175 250 L425 600 M425 250 L175 600" stroke="#c0574e" stroke-width="12" stroke-linecap="round" opacity=".85"/><path d="M250 230 Q300 185 350 230" fill="none" stroke="#d7b66c" stroke-width="7"/>`},
   '軌道変更':{glyph:'軌',svg:(u)=>`<circle cx="300" cy="390" r="72" fill="url(#${u}-gold)"/><ellipse cx="300" cy="390" rx="205" ry="92" fill="none" stroke="#f1d992" stroke-width="6" transform="rotate(-18 300 390)"/><ellipse cx="300" cy="390" rx="160" ry="225" fill="none" stroke="#9b7ec2" stroke-opacity=".55" stroke-width="5" transform="rotate(28 300 390)"/><path d="M135 460 C190 355 270 300 350 285 C430 270 485 225 510 165" fill="none" stroke="#ffd978" stroke-width="9" stroke-linecap="round"/><path d="M510 165 L476 181 L493 211" fill="none" stroke="#ffd978" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160" cy="470" r="17" fill="#fff1b7"/><circle cx="440" cy="295" r="14" fill="#d8c5ff"/>`}
 };
+
+export const OWNER_TAROT_CARD_NAMES=Object.freeze(Object.keys(CARD_CONCEPTS));
 
 function fallbackConcept(){return {glyph:'✦',svg:(u)=>`<circle cx="300" cy="390" r="145" fill="url(#${u}-glass)" stroke="#f1d992" stroke-width="6"/><path d="M300 210 L326 345 L460 390 L326 435 L300 570 L274 435 L140 390 L274 345Z" fill="url(#${u}-gold)"/>`};}
 function makeStars(seed){return Array.from({length:32},(_,i)=>{const x=42+((seed+i*89)%516),y=128+(((seed>>>3)+i*131)%540),r=i%6===0?2.5:i%3===0?1.7:1.1,opacity=(0.24+(i%6)*0.1).toFixed(2);return `<circle cx="${x}" cy="${y}" r="${r}" fill="#f5dfa0" opacity="${opacity}"/>`;}).join('');}

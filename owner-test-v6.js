@@ -4,9 +4,9 @@ import {
   scoreMiniIpip,
   buildInternalPersonalityModel,
   buildPersonalityNarrative
-} from './personality-core.js?v=1.0.0';
+} from './personality-core.js?v=1.1.0';
 
-const VERSION='6.0.0';
+const VERSION='6.4.0';
 const STORE='orbita_owner_personality_v1';
 
 export async function initOwnerTestV6(){
@@ -150,10 +150,14 @@ function installResultController(){
   if(!root||root.dataset.personalityResultController==='true') return;
   root.dataset.personalityResultController='true';
 
-  let timer=0;
+  let scheduled=false;
   const schedule=()=>{
-    window.clearTimeout(timer);
-    timer=window.setTimeout(renderPersonalityProfile,140);
+    if(scheduled) return;
+    scheduled=true;
+    window.requestAnimationFrame(()=>{
+      scheduled=false;
+      renderPersonalityProfile();
+    });
   };
   const observer=new MutationObserver(schedule);
   observer.observe(root,{childList:true,subtree:true});

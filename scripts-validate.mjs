@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const root = process.cwd();
 const advisorImages = ['luna','shion','rei','mikoto','sougen','aurora','malik','rou','riho','usaki'].map((name) => `assets/advisors/${name}.webp`);
@@ -29,7 +30,7 @@ if (!/paidMode:\s*false/.test(config) || !/operatorReady:\s*false/.test(config))
 const worker = fs.readFileSync(path.join(root,'worker/src/index.js'),'utf8');
 if (/sk_(test|live|proj)_/.test(worker)) errors.push('Possible secret in worker source.');
 if (/OPENAI_API_KEY\s*=/.test(config) || /STRIPE_SECRET_KEY\s*=/.test(config)) errors.push('Secret-like config found in frontend.');
-const { ADVISORS } = await import(path.join(root,'advisors.js'));
+const { ADVISORS } = await import(pathToFileURL(path.join(root,'advisors.js')).href);
 if (ADVISORS.length !== 10) errors.push(`Expected 10 advisors, found ${ADVISORS.length}.`);
 if (!/架空のAI鑑定人格/.test(fs.readFileSync(path.join(root,'terms.html'),'utf8'))) errors.push('AI persona disclosure missing from terms.');
 if (errors.length) {

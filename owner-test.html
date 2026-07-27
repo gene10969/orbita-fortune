@@ -14,16 +14,81 @@
 <body>
   <main class="wrap">
     <header class="top"><div class="brand">ORBITA</div><div class="badge">運営者テスト v2</div></header>
-    <section id="gate" class="panel"><p class="muted">公開サイトからはリンクしていません。</p><h1>運営者テスト</h1><p>予約枠を使わず、チャットから結果表示まで確認できます。</p><label class="field"><span>アクセスキー</span><input id="access-key" type="password" autocomplete="off" placeholder="アクセスキーを入力"></label><button id="unlock" class="button primary" type="button">テストを開始</button><div id="gate-error" class="error hidden"></div></section>
+    <section id="gate" class="panel"><p class="muted">公開サイトからはリンクしていません。</p><h1>運営者テスト</h1><p>予約枠を使わず、チャットから結果表示まで確認できます。</p><label class="field"><span>アクセスキー</span><input id="access-key" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="アクセスキーを入力"></label><button id="unlock" class="button primary" type="button">テストを開始</button><div id="gate-error" class="error hidden" role="alert" aria-live="polite"></div></section>
     <section id="advisor-panel" class="panel hidden"><p class="eyebrow">STEP 1</p><p class="muted">実際の予約枠には影響しません。どの時間帯でも試せます。</p><h1>鑑定パートナーを選ぶ</h1><div id="advisor-grid" class="advisor-grid"></div><div class="selection-action"><button id="start-chat" class="button primary" type="button" disabled>この相手でチャットを試す</button></div></section>
     <section id="chat-panel" class="panel hidden"><div id="chat-head" class="chat-head"></div><div id="messages" class="messages" aria-live="polite"></div><div id="controls" class="controls"></div></section>
     <section id="waiting-panel" class="panel hidden"><div class="progress"><div class="estimate" id="estimate-label">今回の目安を計算中</div><div class="orb"><div class="count" id="countdown">--</div></div><h1 id="waiting-title">結果をまとめています</h1><p class="muted" id="waiting-detail">相談内容と選んだ占い方法を読み合わせています。</p><div class="waiting-content" id="waiting-content"></div><div class="waiting-dots" id="waiting-dots"></div></div></section>
     <section id="result-panel" class="panel hidden"><div id="result-root"></div></section>
   </main>
+  <script>
+    (() => {
+      const ACCESS_KEY='ORB-OEWA-OZ29';
+      const ACCESS_STORE='orbita_owner_test_access_v2';
+      const input=document.getElementById('access-key');
+      const button=document.getElementById('unlock');
+      const error=document.getElementById('gate-error');
+      let readyHandler=null;
+      let loadTimer=0;
+
+      const hasAccess=()=>Number(sessionStorage.getItem(ACCESS_STORE)||0)>Date.now();
+      const showError=(message)=>{
+        error.textContent=message;
+        error.classList.remove('hidden');
+      };
+      const clearError=()=>{
+        error.textContent='';
+        error.classList.add('hidden');
+      };
+      const waitForOwnerModule=()=>{
+        button.disabled=true;
+        button.textContent='画面を準備しています…';
+        window.clearTimeout(loadTimer);
+        loadTimer=window.setTimeout(()=>{
+          if(readyHandler) return;
+          button.disabled=false;
+          button.textContent='テストを開始';
+          showError('画面の読み込みに失敗しました。HTTP(S)のURLで開き、ページを再読み込みしてください。');
+        },8000);
+      };
+      const openOwnerTest=()=>{
+        window.clearTimeout(loadTimer);
+        clearError();
+        button.disabled=false;
+        button.textContent='テストを開始';
+        readyHandler?.();
+      };
+      const grantAccess=()=>{
+        const value=input.value.trim();
+        if(value!==ACCESS_KEY){
+          showError('アクセスキーが違います。英字のO（オー）と数字の0（ゼロ）をご確認ください。');
+          return;
+        }
+        sessionStorage.setItem(ACCESS_STORE,String(Date.now()+12*60*60*1000));
+        if(readyHandler) openOwnerTest();
+        else waitForOwnerModule();
+      };
+
+      button.addEventListener('click',grantAccess);
+      input.addEventListener('keydown',(event)=>{
+        if(event.key==='Enter') grantAccess();
+      });
+      input.addEventListener('input',clearError);
+
+      window.__orbitaOwnerGate={
+        setReady(handler){
+          readyHandler=handler;
+          if(hasAccess()) openOwnerTest();
+        },
+        hasAccess
+      };
+
+      if(hasAccess()) waitForOwnerModule();
+    })();
+  </script>
   <script type="module">
-    import { ADVISORS, getAdvisor, getMethod } from './advisors.js?v=3.2.0';
+    import { ADVISORS, getAdvisor, getMethod } from './advisors.js?v=3.2.3';
     import { generateReading } from './engine.js?v=3.2.0';
-    const ACCESS_KEY='ORB-OEWA-OZ29',ACCESS_STORE='orbita_owner_test_access_v2',REMINDER_STORE='orbita_owner_reminder_test_v1';
+    const REMINDER_STORE='orbita_owner_reminder_test_v1';
     const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
     const panels=['gate','advisor-panel','chat-panel','waiting-panel','result-panel'];
     const CATEGORY_LABELS={love:'恋愛',work:'仕事・転職',relationship:'人間関係',money:'お金',life:'人生・将来',other:'その他'};
@@ -32,8 +97,6 @@
     let selectedAdvisorId='',stepIndex=0,answers={},messages=[],result=null;
     function showPanel(id){panels.forEach(n=>document.getElementById(n)?.classList.toggle('hidden',n!==id));window.scrollTo({top:0,behavior:'smooth'})}
     function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-    function grantAccess(){const v=$('#access-key').value.trim();if(v!==ACCESS_KEY){$('#gate-error').textContent='アクセスキーが違います。';$('#gate-error').classList.remove('hidden');return}sessionStorage.setItem(ACCESS_STORE,String(Date.now()+12*60*60*1000));renderAdvisors();showPanel('advisor-panel')}
-    function hasAccess(){return Number(sessionStorage.getItem(ACCESS_STORE)||0)>Date.now()}
     function renderAdvisors(){$('#advisor-grid').innerHTML=ADVISORS.map(a=>`<button class="advisor" data-advisor="${esc(a.id)}" data-long="${a.name.length>=8}"><img src="${esc(a.image)}?v=3.2.0" alt="${esc(a.name)}"><div class="advisor-body"><strong>${esc(a.name)}</strong><small>${esc(a.tagline)}</small><span class="tag">${a.age}歳・${esc(a.type)}</span></div></button>`).join('');$$('[data-advisor]').forEach(b=>b.addEventListener('click',()=>{selectedAdvisorId=b.dataset.advisor;$$('[data-advisor]').forEach(i=>i.classList.toggle('selected',i===b));$('#start-chat').disabled=false}))}
     function addMessage(role,text){messages.push({role,text});renderMessages()}
     function renderMessages(){$('#messages').innerHTML=messages.map(m=>`<div class="message ${m.role}"><div class="bubble">${esc(m.text)}</div></div>`).join('');$('#messages').scrollTop=$('#messages').scrollHeight}
@@ -49,7 +112,8 @@
     function renderResult(){showPanel('result-panel');const a=getAdvisor(selectedAdvisorId),rec=recommendationData(),p1=result.scores.a,p2=result.scores.b,need=Number(answers.tension)>=7||result.clarity<58;$('#result-root').innerHTML=`<div class="result-head"><p class="eyebrow">TEST RESULT</p><h1>${esc(answers.nickname)}さんの鑑定結果</h1><p>${esc(a.name)}｜${esc(METHOD_DETAILS[answers.method]?.title||getMethod(answers.method).name)}</p></div><section class="recommend"><span class="label">${esc(rec.strength)}</span><h2>今回は「${esc(rec.selected)}」をおすすめします</h2><p>断定ではありませんが、今の相談内容ではこちらから動く方が現実的です。</p><ul>${rec.reasons.map(r=>`<li>${esc(r)}</li>`).join('')}</ul><div class="action-box"><strong>今日やること</strong><p>${esc(rec.firstAction)}</p></div></section><div class="choice-compare"><article class="choice-result ${rec.pick===1?'recommended':''}"><small>候補1</small><strong>${esc(answers.option1)}</strong><p>${rec.pick===1?'今回はこちらを優先':'今回は二番目の候補'}</p><div class="meter"><i style="width:${p1}%"></i></div><small>おすすめの強さ：${p1>=60?'高め':p1>=50?'やや高め':'慎重'}</small></article><article class="choice-result ${rec.pick===2?'recommended':''}"><small>候補2</small><strong>${esc(answers.option2)}</strong><p>${rec.pick===2?'今回はこちらを優先':'今回は二番目の候補'}</p><div class="meter"><i style="width:${p2}%"></i></div><small>おすすめの強さ：${p2>=60?'高め':p2>=50?'やや高め':'慎重'}</small></article></div><h2 class="section-title">3枚のタロット</h2><div class="tarot-grid">${result.cards.map((c,i)=>`<article class="tarot-card"><div class="tarot-number">${String(i+1).padStart(2,'0')}</div><div class="tarot-art">${esc(c.glyph)}</div><div class="position">${['今の状況','気をつけたいこと','次の行動'][i]}</div><h3>${esc(c.name)}</h3><p>${esc(i===1?c.shadow:c.light)}</p><p><strong>行動：</strong>${esc(c.action)}</p></article>`).join('')}</div><h2 class="section-title">今回の読み解き</h2><div class="narratives"><article class="narrative"><h3>おすすめする理由</h3><p>${esc(result.narrative.overview)}</p></article><article class="narrative"><h3>気をつけたい点</h3><p>${esc(result.narrative.hidden)}</p></article><article class="narrative"><h3>動く前に決めること</h3><p>${esc(result.narrative.timing)}</p></article><article class="narrative"><h3>最後の後押し</h3><p>${esc(result.narrative.closing)}</p></article></div><h2 class="section-title">次の7日間でやること</h2><div class="days">${result.plan.map(item=>`<article class="day"><strong>${item.day}日目：${esc(item.title)}</strong><p>${esc(item.body)}</p></article>`).join('')}</div><section id="reminder-box" class="reminder ${need?'':'hidden-by-need'}"><h3>必要な日だけメッセージを受け取る</h3><p>今回は迷いが強め、または判断材料が少ないため、1日目・3日目・5日目・7日目に短い確認メッセージを出す設定を試せます。</p><div class="reminder-options"><label><input type="radio" name="reminder-time" value="morning"> 朝 8:00</label><label><input type="radio" name="reminder-time" value="night"> 夜 21:00</label><label><input type="radio" name="reminder-time" value="none" checked> 受け取らない</label></div><button id="save-reminder" class="button primary" type="button">メッセージ設定を保存</button> <button id="test-notification" class="button" type="button">通知を今すぐ試す</button><p class="reminder-plan" id="reminder-plan">静的なテストページでは設定保存と即時通知の確認まで行えます。閉じている間の毎日配信には、本番用のプッシュ通知サーバーが必要です。</p></section><div class="actions"><button id="retry" class="button primary" type="button">別の内容で試す</button><button id="change-person" class="button" type="button">相手を変える</button></div><p class="notice">この結果は運営者テストです。重要な医療・法律・金融・安全上の判断の代わりには使用しないでください。</p>`;$('#retry').addEventListener('click',startChat);$('#change-person').addEventListener('click',()=>showPanel('advisor-panel'));$('#save-reminder')?.addEventListener('click',saveReminder);$('#test-notification')?.addEventListener('click',testNotification)}
     function saveReminder(){const v=$('input[name="reminder-time"]:checked')?.value||'none',payload={time:v,days:v==='none'?[]:[1,3,5,7],savedAt:new Date().toISOString()};localStorage.setItem(REMINDER_STORE,JSON.stringify(payload));$('#reminder-plan').textContent=v==='none'?'メッセージを受け取らない設定で保存しました。':`${v==='morning'?'朝8:00':'夜21:00'}、1・3・5・7日目に送る設定を保存しました。`}
     async function testNotification(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません。');return}const p=await Notification.requestPermission();if(p!=='granted'){alert('通知が許可されませんでした。');return}new Notification('ORBITA テスト通知',{body:'今日の一歩を確認する時間です。結果画面の「今日やること」を一つだけ試してみましょう。'})}
-    $('#unlock').addEventListener('click',grantAccess);$('#access-key').addEventListener('keydown',e=>{if(e.key==='Enter')grantAccess()});$('#start-chat').addEventListener('click',startChat);if(hasAccess()){renderAdvisors();showPanel('advisor-panel')}
+    $('#start-chat').addEventListener('click',startChat);
+    window.__orbitaOwnerGate?.setReady(()=>{renderAdvisors();showPanel('advisor-panel')});
   </script>
 </body>
 </html>
